@@ -14,12 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
-const ocr_1 = require("./ocr");
+const scraper_1 = require("./scraper");
 const app = express_1.default();
 function ocr() {
     return __awaiter(this, void 0, void 0, function* () {
-        const text = yield ocr_1.Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
-        const dates = ocr_1.Scraper.guessDatesFromString(text);
+        const text = yield scraper_1.Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
+        const dates = scraper_1.Scraper.guessDatesFromString(text);
+        // Scraper.addTracksToDate()
     });
 }
 ocr();

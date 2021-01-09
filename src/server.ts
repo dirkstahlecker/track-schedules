@@ -7,9 +7,9 @@ const app = express();
 async function ocr(): Promise<void>
 {
   const text = await Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
-  const dates: string[] = Scraper.guessDatesFromString(text);
+  const dates: Date[] = Scraper.guessDatesFromString(text);
 
-  Scraper.addTrackToDate()
+  // Scraper.addTracksToDate()
 }
 
 ocr()
