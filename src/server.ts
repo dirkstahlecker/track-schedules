@@ -1,10 +1,19 @@
 import express from 'express';
 import path from 'path';
-import { doOCR } from './ocr';
+import { Scraper } from './scraper';
 
 const app = express();
 
-doOCR();
+async function ocr(): Promise<void>
+{
+  const text = await Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
+  const dates: string[] = Scraper.guessDatesFromString(text);
+
+  Scraper.addTrackToDate()
+}
+
+ocr()
+// doScraping();
 
 app.get("/test", (req, res) => {
   console.log("/test")
