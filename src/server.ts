@@ -6,10 +6,14 @@ const app = express();
 
 async function ocr(): Promise<void>
 {
-  const text = await Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
-  const dates: Date[] = Scraper.guessDatesFromString(text, Formats.seekonk);
+  const text = await Scraper.executeOCR(
+    'https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg',
+    true);
+  // console.log("OCR text: ");
+  // console.log(text);
+  const dates: Date[] = Scraper.guessDatesFromString(text, Formats.normal);
 
-  Scraper.addDatesForTrack("Seekonk Speedway", dates);
+  Scraper.addDatesForTrack("Waterford Speedbowl", dates);
 }
 
 ocr()

@@ -18,9 +18,11 @@ const scraper_1 = require("./scraper");
 const app = express_1.default();
 function ocr() {
     return __awaiter(this, void 0, void 0, function* () {
-        const text = yield scraper_1.Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
-        const dates = scraper_1.Scraper.guessDatesFromString(text, scraper_1.Formats.seekonk);
-        scraper_1.Scraper.addDatesForTrack("Seekonk Speedway", dates);
+        const text = yield scraper_1.Scraper.executeOCR('https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg', true);
+        // console.log("OCR text: ");
+        // console.log(text);
+        const dates = scraper_1.Scraper.guessDatesFromString(text, scraper_1.Formats.normal);
+        scraper_1.Scraper.addDatesForTrack("Waterford Speedbowl", dates);
     });
 }
 ocr();

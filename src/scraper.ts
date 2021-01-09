@@ -1,10 +1,13 @@
 import Tesseract from 'tesseract.js';
 import rp from 'request-promise';
 import cheerio from 'cheerio';
-import { ocrTestString } from './ocrTestString';
+import { waterfordTestString } from './ocrTestString';
 
+// Regex should return groups that are the full date
 const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
 const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
+
+const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
 
 const currentYear: number = new Date().getFullYear();
 
@@ -56,20 +59,38 @@ abstract class DateHelper
     }
   }
 
-  public static makeDateSeekonk = (text: string) => {
-    const pieces = text.split(" ");
+  // isolate the actual date object creation in case we need to do something with timezones
+  private static makeDateBase(month: number, day: number, year: number = currentYear): Date
+  {
+    return new Date(year, month, day);
+  }
+
+  public static makeDateSeekonk = (matchText: string) => {
+    const pieces = matchText.split(" ");
     const month = DateHelper.stringToMonth(pieces[0]);
     const day = Number.parseInt(pieces[1], 10);
-    return new Date(currentYear, month, day);
+    return DateHelper.makeDateBase(month, day);
+  }
+
+  public static makeDateNormal = (matchText: string) => {
+    const pieces = matchText.split(/[-\/]/);
+    const monthIndex: number = Number.parseInt(pieces[0], 10) - 1;
+    const day = Number.parseInt(pieces[1], 10);
+    // const year = Number.parseInt(pieces[2], 10);
+    return DateHelper.makeDateBase(monthIndex, day);
   }
 }
 
-type OcrFormat = {regex: RegExp, makeDate: (text: string) => Date};
+type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date};
 
 export const Formats = {
   seekonk: {
     regex: seekonkRegex,
     makeDate: DateHelper.makeDateSeekonk
+  },
+  normal: {
+    regex: normalDateRegex,
+    makeDate: DateHelper.makeDateNormal
   },
 }
 
@@ -110,7 +131,8 @@ export abstract class Scraper
   public static async executeOCR(url: string, log: boolean = false): Promise<string>
   {
     // short-circuit for testing
-    return Promise.resolve(ocrTestString);
+    // return Promise.resolve(ocrTestString);
+    return Promise.resolve(waterfordTestString);
 
     const { data: { text } } = await Tesseract.recognize(
       url, 'eng', { logger: (m1) => { if (log) console.log(m1) }}
@@ -119,16 +141,23 @@ export abstract class Scraper
     return text;
   }
 
-  public static guessDatesFromString(text: string, format: OcrFormat): Date[]
+  public static guessDatesFromString(fullText: string, format: OcrFormat): Date[]
   {
     const possibleDates: Date[] = [];
-    const groups = text.match(format.regex);
+    const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
     console.log(groups);
+
+    if (groups === undefined)
+    {
+      console.error("Cannot guess any dates");
+      return [];
+    }
 
     groups.forEach((group) => {
       possibleDates.push(format.makeDate(group));
     });
 
+    console.log("Possible dates: ");
     console.log(possibleDates)
     return possibleDates;
   }
