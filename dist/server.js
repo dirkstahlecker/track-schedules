@@ -5,7 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
+const tesseract_js_1 = __importDefault(require("tesseract.js"));
 const app = express_1.default();
+function doOCR() {
+    return tesseract_js_1.default.recognize('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg', 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+        console.log(text);
+    });
+}
+doOCR();
 app.get("/test", (req, res) => {
     console.log("/test");
     res.json({ message: "Hello World" });
