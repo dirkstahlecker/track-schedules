@@ -12,7 +12,8 @@ abstract class DateHelper
 {
   private static stringToMonth(text: string): number
   {
-    switch (text.toLowerCase())
+    const month: string = text.toLowerCase();
+    switch (month)
     {
       case "jan":
       case "january":
@@ -57,12 +58,16 @@ abstract class DateHelper
 
   public static makeDateSeekonk = (text: string) => {
     const pieces = text.split(" ");
-    return new Date(DateHelper.stringToMonth(pieces[1]), Number.parseInt(pieces[0], 10), currentYear);
+    const month = DateHelper.stringToMonth(pieces[0]);
+    const day = Number.parseInt(pieces[1], 10);
+    return new Date(currentYear, month, day);
   }
 }
 
-const Formats = {
-  "seekonk": {
+type OcrFormat = {regex: RegExp, makeDate: (text: string) => Date};
+
+export const Formats = {
+  seekonk: {
     regex: seekonkRegex,
     makeDate: DateHelper.makeDateSeekonk
   },
@@ -97,14 +102,14 @@ export abstract class Scraper
     return text;
   }
 
-  public static guessDatesFromString(text: string, format: string): Date[]
+  public static guessDatesFromString(text: string, format: OcrFormat): Date[]
   {
     const possibleDates: Date[] = [];
-    const groups = text.match(Formats.seekonk.regex);
+    const groups = text.match(format.regex);
     console.log(groups);
 
     groups.forEach((group) => {
-      possibleDates.push(Formats.seekonk.makeDate(group));
+      possibleDates.push(format.makeDate(group));
     });
 
     console.log(possibleDates)
@@ -127,5 +132,3 @@ export abstract class Scraper
       });
   }
 }
-
-type OcrFormat = {regex: RegExp, makeDate: (text: string) => Date};

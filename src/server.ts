@@ -1,13 +1,13 @@
 import express from 'express';
 import path from 'path';
-import { Scraper } from './scraper';
+import { Formats, Scraper } from './scraper';
 
 const app = express();
 
 async function ocr(): Promise<void>
 {
   const text = await Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
-  const dates: Date[] = Scraper.guessDatesFromString(text);
+  const dates: Date[] = Scraper.guessDatesFromString(text, Formats.seekonk);
 
   // Scraper.addTracksToDate()
 }
