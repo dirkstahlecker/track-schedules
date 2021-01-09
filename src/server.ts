@@ -1,19 +1,8 @@
 import express from 'express';
 import path from 'path';
-import Tesseract from 'tesseract.js';
+import { doOCR } from './ocr';
 
 const app = express();
-
-function doOCR(): Promise<string | void>
-{
-  return Tesseract.recognize(
-    'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg',
-    'eng',
-    { logger: m => console.log(m) }
-  ).then(({ data: { text } }) => {
-    console.log(text);
-  })
-}
 
 doOCR();
 

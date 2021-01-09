@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import {observer} from "mobx-react";
 import {makeObservable, observable, runInAction} from "mobx";
-import Tesseract from 'tesseract.js';
 
 export class AppMachine
 {
