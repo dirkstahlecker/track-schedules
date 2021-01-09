@@ -80,7 +80,24 @@ export abstract class Scraper
   public static addTracksToDate(date: Date, trackNames: Set<string>): void
   {
     const existingTracks: Set<string> = this.dateTrackMap.get(date);
-    this.dateTrackMap.set(date, new Set(...existingTracks, ...trackNames));
+    this.dateTrackMap.set(date, new Set([...existingTracks, ...trackNames]));
+  }
+
+  public static addDatesForTrack(trackName: string, dates: Date[]): void
+  {
+    dates.forEach((date: Date) => {
+      const existingTracks: Set<string> | undefined = this.dateTrackMap.get(date);
+      // const newTracks: Set<string> = existingTracks === undefined
+      //   ? new Set<string>(trackName) : new Set([...existingTracks, trackName]);
+      let newTracks: Set<string> = new Set();
+      newTracks.add(trackName);
+      if (existingTracks !== undefined)
+      {
+        newTracks = new Set([...existingTracks]);
+      }
+      this.dateTrackMap.set(date, newTracks);
+    });
+    console.log(this.dateTrackMap)
   }
 
   public static addDate(date: Date): void

@@ -20,7 +20,7 @@ function ocr() {
     return __awaiter(this, void 0, void 0, function* () {
         const text = yield scraper_1.Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
         const dates = scraper_1.Scraper.guessDatesFromString(text, scraper_1.Formats.seekonk);
-        // Scraper.addTracksToDate()
+        scraper_1.Scraper.addDatesForTrack("Seekonk Speedway", dates);
     });
 }
 ocr();

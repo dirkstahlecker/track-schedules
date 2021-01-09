@@ -9,7 +9,7 @@ async function ocr(): Promise<void>
   const text = await Scraper.executeOCR('https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg');
   const dates: Date[] = Scraper.guessDatesFromString(text, Formats.seekonk);
 
-  // Scraper.addTracksToDate()
+  Scraper.addDatesForTrack("Seekonk Speedway", dates);
 }
 
 ocr()
