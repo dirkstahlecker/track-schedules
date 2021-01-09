@@ -1,21 +1,24 @@
 import Tesseract from 'tesseract.js';
 import rp from 'request-promise';
 import cheerio from 'cheerio';
-import { waterfordTestString } from './ocrTestString';
+import { grandRapidsTestString, waterfordTestString } from './ocrTestString';
 
-// Regex should return groups that are the full date
-const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
 const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
 
+
+// Regex should return groups that are the full date
+const delimitersRegex = /(?:\||-|\/)+/;
+const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
+const monthDelimiterDayRegex = /(?:january|jan|february|feb|march|mar|april|apr|may|jun|june|july|jul|august|aug|sep|sept|september|october|oct|november|nov|december|dec)\s+[\|]*\s*(?:\d{1,2})/gmi;
 const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
 
 const currentYear: number = new Date().getFullYear();
 
 abstract class DateHelper
 {
-  private static stringToMonth(text: string): number
+  private static stringToMonth(text: string): number | null
   {
-    const month: string = text.toLowerCase();
+    const month: string = text.toLowerCase().trim();
     switch (month)
     {
       case "jan":
@@ -55,33 +58,46 @@ abstract class DateHelper
       case "december":
         return 11;
       default:
-        throw new Error("Invalid date: " + text);
+        console.error("Invalid date: " + text);
+        return null;
     }
   }
 
   // isolate the actual date object creation in case we need to do something with timezones
-  private static makeDateBase(month: number, day: number, year: number = currentYear): Date
+  private static makeDateBase(month: number | null, day: number | null, year: number = currentYear): Date | null
   {
+    if (month == null || day == null)
+    {
+      console.error(`Cannot make date - invalid arguments. month: ${month}, day: ${day}, year: ${year}`);
+      return null;
+    }
     return new Date(year, month, day);
   }
 
-  public static makeDateSeekonk = (matchText: string) => {
+  public static makeDateSeekonk = (matchText: string): Date | null => {
     const pieces = matchText.split(" ");
-    const month = DateHelper.stringToMonth(pieces[0]);
+    const month: number | null = DateHelper.stringToMonth(pieces[0]);
     const day = Number.parseInt(pieces[1], 10);
     return DateHelper.makeDateBase(month, day);
   }
 
-  public static makeDateNormal = (matchText: string) => {
-    const pieces = matchText.split(/[-\/]/);
+  public static makeDateNormal = (matchText: string): Date | null => {
+    const pieces = matchText.split(delimitersRegex);
     const monthIndex: number = Number.parseInt(pieces[0], 10) - 1;
     const day = Number.parseInt(pieces[1], 10);
     // const year = Number.parseInt(pieces[2], 10);
     return DateHelper.makeDateBase(monthIndex, day);
   }
+
+  public static makeDateMonthDelimiterDay = (matchText: string): Date | null => {
+    const pieces = matchText.split(delimitersRegex);
+    const monthIndex = DateHelper.stringToMonth(pieces[0]);
+    const day = Number.parseInt(pieces[1], 10);
+    return DateHelper.makeDateBase(monthIndex, day);
+  };
 }
 
-type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date};
+type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date | null};
 
 export const Formats = {
   seekonk: {
@@ -92,6 +108,10 @@ export const Formats = {
     regex: normalDateRegex,
     makeDate: DateHelper.makeDateNormal
   },
+  monthDelimiterDay: {
+    regex: monthDelimiterDayRegex,
+    makeDate: DateHelper.makeDateMonthDelimiterDay
+  }
 }
 
 export abstract class Scraper
@@ -132,7 +152,7 @@ export abstract class Scraper
   {
     // short-circuit for testing
     // return Promise.resolve(ocrTestString);
-    return Promise.resolve(waterfordTestString);
+    return Promise.resolve(grandRapidsTestString);
 
     const { data: { text } } = await Tesseract.recognize(
       url, 'eng', { logger: (m1) => { if (log) console.log(m1) }}
@@ -145,6 +165,7 @@ export abstract class Scraper
   {
     const possibleDates: Date[] = [];
     const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
+    console.log("groups: ");
     console.log(groups);
 
     if (groups === undefined)
@@ -154,7 +175,11 @@ export abstract class Scraper
     }
 
     groups.forEach((group) => {
-      possibleDates.push(format.makeDate(group));
+      const date: Date | null = format.makeDate(group);
+      if (date != null)
+      {
+        possibleDates.push(date);
+      }
     });
 
     console.log("Possible dates: ");

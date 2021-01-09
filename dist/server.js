@@ -18,10 +18,10 @@ const scraper_1 = require("./scraper");
 const app = express_1.default();
 function ocr() {
     return __awaiter(this, void 0, void 0, function* () {
-        const text = yield scraper_1.Scraper.executeOCR('https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg', true);
+        const text = yield scraper_1.Scraper.executeOCR("https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96", true);
         // console.log("OCR text: ");
         // console.log(text);
-        const dates = scraper_1.Scraper.guessDatesFromString(text, scraper_1.Formats.normal);
+        const dates = scraper_1.Scraper.guessDatesFromString(text, scraper_1.Formats.monthDelimiterDay);
         scraper_1.Scraper.addDatesForTrack("Waterford Speedbowl", dates);
     });
 }

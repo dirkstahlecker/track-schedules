@@ -140,3 +140,31 @@ SK- SK® Modified LM- Late Model SS- Street Stocks MS- Mini-Stocks SKL- SK Lites
 
 VMR- Vintage Midget Racing
 `;
+
+export const grandRapidsTestString = `Thursday | May [ 13 [Openfracice [ ]
+Thursday | May | 20 [seasonopener  |m,ss,NRs,Mwmps,H |
+Thursday -m-
+Thursday | June | '3 [ Thursday Night Thunder [tm,m, 55, mwm,ps, 0|
+Fridsy | june | 4 [ActionPackedndwowr | |
+Thursday | | 10 [ Advantage RV Modified Tour | M, NRS, PS, H
+Thursday 17_| Thursday Night Thunder | ™, S5, NRS, MW, PS, H
+Frida 18| Action Packed Enduro #2 1
+Thursday | June | 24 | Thursday Night Thunder | LM, M, 55, MWM, Ps, H, PPE
+[Thursday [ suly | 1 [Thursday Night Thunder | um, m, 55, Mwm,ps,H_ |
+[Thursday | suly | 8 [Thursday Night Thunder | m,5s,NRS, Mwm,Ps,H |
+[Thursday [ suly | 15 [Thursday Night Thunder | um, m, 55, mwm,ps,H |
+[ oy |16 [Actionpackedndurons | |
+[ uly ["22 [Thursday Night Thunder | w,55,NRS, MwM, Ps,H |
+[ suly | 29 [FastLaneSuperstockseries |ss,mwm,ps,H,Ma |
+e | s |+ | rmpgeme’— 105 et
+| August | 5 |Thursday Night Thunder M, 55, NRS, MWM, PS, H
+[Thursday [ August | 12 [Thursday Night Thunder | tm, m, 55, Mwm,ps,H |
+T e S
+Thursday | August | 19 | itasca County Fair Special LM, M, S5, MWM, WS
+Prdsy | August | 20 [ActinPackedEndwro#s | |
+LT RS e
+Thursday | August | 26 | Season Championship Night | LM, M, SS, MWM, PS, H
+Frida | September 27th Annual Wissota Classic__| LM, M, S5, MWM, PS.
+Friday September Action Packed Enduro | Double Header
+Saturday | September Action Packed Enduro Double Header`;
+
