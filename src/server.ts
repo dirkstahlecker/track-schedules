@@ -8,7 +8,7 @@ const app = express();
 export const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
 export const grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
 export const waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg";
-
+export const lincolnUrl = "http://lincolnspeedway.com/wp-content/uploads/2020/12/2021-Lincoln-Schedule-1.pdf";
 
 async function ocr(url: string, trackName: string, format: OcrFormat): Promise<void>
 {
@@ -22,9 +22,18 @@ async function ocr(url: string, trackName: string, format: OcrFormat): Promise<v
   Scraper.addDatesForTrack(trackName, dates);
 }
 
-ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
-ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-ocr(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+// ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+// ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+// ocr(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+// ocr(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
+// tslint:disable
+const crawler = require('crawler-request');
+
+crawler(lincolnUrl).then((response: any) => {
+    // handle response
+    console.log(response.text);
+});
+
 
 // doScraping();
 
