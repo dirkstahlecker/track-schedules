@@ -187,6 +187,12 @@ export abstract class Scraper
   // URL entry point
   public static async readTextFromSource(url: string, trackName: string, format: OcrFormat | null = null): Promise<void>
   {
+    if (url == null || url === undefined)
+    {
+      console.error("Cannot read text from source - source URL is null");
+      return;
+    }
+
     let text: string;
     if (url.endsWith("pdf"))
     {

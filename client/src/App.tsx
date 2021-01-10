@@ -94,6 +94,7 @@ class App extends React.Component<AppProps>
       <label htmlFor="parseDocumentTrackName">Track Name:</label>
       <input type="text" onChange={this.onParseDocumentTrackNameChange}/>
       <button onClick={() => this.submitUrl()}>Submit</button>
+      <hr/>
     </div>
   }
 }

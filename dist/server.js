@@ -17,7 +17,25 @@ const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const database_1 = require("./database");
 const scraper_1 = require("./scraper");
+const body_parser_1 = __importDefault(require("body-parser"));
 const app = express_1.default();
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+// Don't touch the following - Heroku gets very finnicky about it
+// Serve static files from the React app
+app.use(express_1.default.static(path_1.default.join(__dirname, 'client/build')));
+app.use(express_1.default.json()); // to support JSON-encoded bodies
+app.use(express_1.default.urlencoded()); // to support URL-encoded bodies
+app.use(body_parser_1.default.urlencoded({ extended: true }));
+app.use(body_parser_1.default.json());
+// app.use(bodyParser.json())
+// app.use(
+//   bodyParser.urlencoded({
+//     extended: true,
+//   })
+// )
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 exports.seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
 exports.grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
 exports.waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg";
@@ -51,8 +69,12 @@ app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, func
 }));
 app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/parseDocument`);
+    console.log(req.body);
+    const url = req.body.url;
+    const trackname = req.body.trackname;
+    console.log(`url: ${url}, trackname: ${trackname}`);
     // TODO: format?
-    const result = yield scraper_1.Scraper.readTextFromSource(req.params.url, req.params.trackName);
+    const result = yield scraper_1.Scraper.readTextFromSource(url, trackname);
     console.log(result);
     res.set('Content-Type', 'application/json');
     res.json(result);

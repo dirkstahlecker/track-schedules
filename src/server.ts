@@ -3,9 +3,31 @@ import path from 'path';
 import { Database } from './database';
 import { grandRapidsTestString } from './ocrTestString';
 import { Formats, OcrFormat, Scraper } from './scraper';
+import bodyParser from 'body-parser';
 
 
 const app = express();
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+// Don't touch the following - Heroku gets very finnicky about it
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.json());       // to support JSON-encoded bodies
+app.use(express.urlencoded()); // to support URL-encoded bodies
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// app.use(bodyParser.json())
+// app.use(
+//   bodyParser.urlencoded({
+//     extended: true,
+//   })
+// )
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 export const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
 export const grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
@@ -61,9 +83,15 @@ app.post("/api/events/add", async(req, res) => {
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
 
+  console.log(req.body)
+
+  const url: string = req.body.url;
+  const trackname: string = req.body.trackname;
+  console.log(`url: ${url}, trackname: ${trackname}`)
+
   // TODO: format?
 
-  const result = await Scraper.readTextFromSource(req.params.url, req.params.trackName)
+  const result = await Scraper.readTextFromSource(url, trackname)
   console.log(result)
 
 	res.set('Content-Type', 'application/json');
