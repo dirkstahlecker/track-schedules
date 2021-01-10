@@ -62,7 +62,18 @@ function testing() {
 // testing();
 app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/add`);
-    const result = yield database_1.Database.addEvents([req.params.date], [req.params.trackname]);
+    const date = req.params.date;
+    const trackname = req.params.trackname;
+    console.log(`date: ${date}, trackname: ${trackname}`);
+    if (date == null || date === "") {
+        console.error("date is null");
+        return;
+    }
+    if (trackname == null || trackname === "") {
+        console.error("trackname is null");
+        return;
+    }
+    const result = yield database_1.Database.addEvents([date], [trackname]);
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
@@ -77,8 +88,17 @@ app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, vo
     console.log(`/api/events/parseDocument`);
     const url = req.body.url;
     const trackname = req.body.trackname;
+    console.log(`url: ${url}, trackname: ${trackname}`);
+    if (url == null || url === "") {
+        console.error("date is null");
+        return;
+    }
+    if (trackname == null || trackname === "") {
+        console.error("trackname is null");
+        return;
+    }
     // TODO: format?
-    yield scraper_1.Scraper.readTextFromSource(url, trackname);
+    yield scraper_1.Scraper.readTextFromSource(url, trackname); // guess format
     // res.set('Content-Type', 'application/json');
     // res.json(result);
 }));

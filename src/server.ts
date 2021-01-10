@@ -72,8 +72,22 @@ async function testing(): Promise<void>
 
 app.post("/api/events/add", async(req, res) => {
   console.log(`/api/events/add`);
+  const date = req.params.date;
+  const trackname = req.params.trackname;
+  console.log(`date: ${date}, trackname: ${trackname}`)
 
-  const result = await Database.addEvents([req.params.date], [req.params.trackname]);
+  if (date == null || date === "")
+  {
+    console.error("date is null");
+    return;
+  }
+  if (trackname == null || trackname === "")
+  {
+    console.error("trackname is null");
+    return;
+  }
+
+  const result = await Database.addEvents([date], [trackname]);
 
 	res.set('Content-Type', 'application/json');
 	res.json(result);
@@ -94,9 +108,22 @@ app.post("/api/events/parseDocument", async(req, res) => {
   const url: string = req.body.url;
   const trackname: string = req.body.trackname;
 
+  console.log(`url: ${url}, trackname: ${trackname}`)
+
+  if (url == null || url === "")
+  {
+    console.error("date is null");
+    return;
+  }
+  if (trackname == null || trackname === "")
+  {
+    console.error("trackname is null");
+    return;
+  }
+
   // TODO: format?
 
-  await Scraper.readTextFromSource(url, trackname)
+  await Scraper.readTextFromSource(url, trackname); // guess format
 
 	// res.set('Content-Type', 'application/json');
 	// res.json(result);
@@ -126,9 +153,12 @@ app.get("*", (req, res) => {
 })
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-	// console.log(`server started on port ${port}`)
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    // console.log(`server started on port ${port}`)
+  });
+}
+
 
 
 // TODO: need to hold state or something for distance filtering (probably in a separate lookup so we don't

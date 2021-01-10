@@ -3,6 +3,7 @@ import rp from 'request-promise';
 import cheerio from 'cheerio';
 import { grandRapidsTestString, seekonkTestString, staffordTestString, waterfordTestString } from './ocrTestString';
 import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server';
+import { Database } from './database';
 //tslint:disable
 const crawler = require('crawler-request');
 // tslint:enable
@@ -17,6 +18,11 @@ const regexOptions = {
 }
 
 const currentYear: number = new Date().getFullYear();
+
+export function TESTPIN_convertDateObjToDatabaseDateString(date: Date): string
+{
+  return DateHelper.convertDateObjToDatabaseDateString(date);
+}
 
 abstract class DateHelper
 {
@@ -133,6 +139,23 @@ abstract class DateHelper
     const day = Number.parseInt(pieces[1], 10);
     return [DateHelper.makeDateBase(monthIndex, day)];
   };
+
+  public static convertDateObjToDatabaseDateString(date: Date): string
+  {
+    const year: number = date.getFullYear();
+    let month: number | string = date.getMonth() + 1; //need to 1 index
+    let day: number | string = date.getDate();
+
+    if (month < 10)
+    {
+      month = `0${month}`;
+    }
+    if (day < 10)
+    {
+      day = `0${day}`;
+    }
+    return `${year}-${month}-${day}`;
+  }
 }
 
 export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date[] | null};
@@ -154,6 +177,7 @@ export const Formats = {
 
 export abstract class Scraper
 {
+  //deprecated - use database instead
   private static dateTrackMap: Map<number, Set<string>> = new Map(); // key is Date.getTime()
 
   public static TESTPIN_guessFormat(sourceText: string): OcrFormat
@@ -215,7 +239,9 @@ export abstract class Scraper
 
     const dates: Date[] = this.guessDatesFromString(text, format);
 
-    Scraper.addDatesForTrack(trackName, dates);
+    // Database.addEvents(dates,) //TODO
+
+    Scraper.addDatesForTrack(trackName, dates); //deprecated - use database instead
   }
 
   public static addTracksToDate(date: Date, trackNames: Set<string>): void

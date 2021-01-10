@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "prestart": "npm run build",
-    "test": "jest ./src/test",
+    "test": "jest ./src/test --no-cache  --detectOpenHandles --runInBand --forceExit",
     "start": "node dist/server.js",
     "build": "rimraf dist && tsc",
     "lint": "eslint . & echo 'lint complete'",
