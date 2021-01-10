@@ -49,16 +49,20 @@ export class Database
     }
   }
 
-  public static async addDate(date: string): Promise<any>
+
+  // TODO: I'm still not sure we actually need a dates table. Just have an entry for
+  // each unique date and track
+
+  public static async addEvent(date: string, trackName: string): Promise<any>
   {
-    const insertQuery: string = `INSERT INTO dates (eventDate) VALUES
-      ('${date}');`;
+    const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName) VALUES
+      ('${date}', '${trackName}');`;
     return this.makeQuery(insertQuery);
   }
 
-  public static async getDate(date: string): Promise<any>
+  public static async getEventsForDate(date: string): Promise<any>
   {
-    const query: string = 'SELECT * FROM dates';
-    const result = await Database.makeQuery(query);
+    const query: string = 'SELECT * FROM dates;';
+    return Database.makeQuery(query);
   }
 }

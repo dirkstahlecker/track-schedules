@@ -43,7 +43,7 @@ async function readTextFromSource(url: string, trackName: string, format: OcrFor
   Scraper.addDatesForTrack(trackName, dates);
 }
 
-function testing(): void
+async function testing(): Promise<void>
 {
   // readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
   // readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
@@ -53,7 +53,10 @@ function testing(): void
   // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
   // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
 
-  Database.addDate("2021-01-08")
+  Database.addEvent("2021-01-08", "Seekonk Speedway");
+
+  // const result = await Database.getDate("2021-01-08")
+  // console.log(result);
 
   // doScraping();
 }

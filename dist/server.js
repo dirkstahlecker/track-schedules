@@ -52,15 +52,19 @@ function readTextFromSource(url, trackName, format) {
     });
 }
 function testing() {
-    // readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
-    // readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-    // readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
-    // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
-    // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
-    // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
-    // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
-    database_1.Database.addDate("2021-01-08");
-    // doScraping();
+    return __awaiter(this, void 0, void 0, function* () {
+        // readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+        // readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+        // readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+        // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
+        // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
+        // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
+        // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
+        database_1.Database.addEvent("2021-01-08", "Seekonk Speedway");
+        // const result = await Database.getDate("2021-01-08")
+        // console.log(result);
+        // doScraping();
+    });
 }
 testing();
 app.get("/test", (req, res) => {
