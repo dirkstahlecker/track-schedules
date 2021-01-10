@@ -1,16 +1,16 @@
 -- a track has multiple dates
 
 
-CREATE TABLE dates
-(
-  date_id SERIAL PRIMARY KEY,
-  eventDate DATE NOT NULL
-);
+-- CREATE TABLE dates
+-- (
+--   date_id SERIAL PRIMARY KEY,
+--   eventDate DATE NOT NULL
+-- );
 
-CREATE TABLE tracks
+CREATE TABLE dateandtrack
 (
   id SERIAL PRIMARY KEY,
-  date_id INTEGER NOT NULL REFERENCES dates(date_id),
+  eventDate DATE NOT NULL,
   trackName text NOT NULL
 );
 

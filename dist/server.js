@@ -61,13 +61,20 @@ function testing() {
         // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
         // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
         database_1.Database.addEvent("2021-01-08", "Seekonk Speedway");
-        // const result = await Database.getDate("2021-01-08")
+        // const result = await Database.getEventForTrackAndDate("2021-01-08", "Seekonk Speedway");
         // console.log(result);
         // doScraping();
     });
 }
-testing();
-app.get("/test", (req, res) => {
+// testing();
+app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`/api/events/add`);
+    const result = yield database_1.Database.addEvent(req.params.date, req.params.trackname);
+    console.log(result);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
+}));
+app.get("/api/", (req, res) => {
     console.log("/test");
     res.json({ message: "Hello World" });
 });

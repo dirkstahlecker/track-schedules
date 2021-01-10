@@ -25,7 +25,7 @@
     "cheerio": "^1.0.0-rc.5",
     "crawler-request": "^1.2.2",
     "express": "^4.17.1",
-    "jest": "^26.6.3",
+    "jest": "26.6.0",
     "mobx": "^6.0.4",
     "mobx-react": "^7.0.5",
     "pdf-parse": "^1.1.1",
