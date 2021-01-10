@@ -17,9 +17,6 @@ const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const database_1 = require("./database");
 const scraper_1 = require("./scraper");
-//tslint:disable
-const crawler = require('crawler-request');
-// tslint:enable
 const app = express_1.default();
 exports.seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
 exports.grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
@@ -29,28 +26,6 @@ exports.staffordUrl = "https://staffordmotorspeedway.com/schedule/";
 exports.staffordPdf = "http://www.thompsonspeedway.com/sites/default/files/upload/files/FINAL%20-2021%20Oval%20Track%20Schedule%20Grid.pdf";
 exports.bapsUrl = "https://www.bapsmotorspeedway.com/schedule/media.aspx?s=17800";
 exports.portRoyalUrl = "https://portroyalspeedway.com/index.php/schedule/";
-function readTextFromSource(url, trackName, format) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let text;
-        if (url.endsWith("pdf")) {
-            const response = yield crawler(url);
-            text = response.text;
-            console.log(text);
-        }
-        else if (url.indexOf(".jpg") > -1) // TOOD: support more than jpg
-         {
-            text = yield scraper_1.Scraper.executeOCR(url, false);
-        }
-        else // webpage, do scraping
-         {
-            text = yield scraper_1.Scraper.executeScraping(url);
-        }
-        // console.log("OCR text: ");
-        // console.log(text);
-        const dates = scraper_1.Scraper.guessDatesFromString(text, format);
-        scraper_1.Scraper.addDatesForTrack(trackName, dates);
-    });
-}
 function testing() {
     return __awaiter(this, void 0, void 0, function* () {
         // readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
@@ -70,6 +45,14 @@ function testing() {
 app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/add`);
     const result = yield database_1.Database.addEvent(req.params.date, req.params.trackname);
+    console.log(result);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
+}));
+app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`/api/events/parseDocument`);
+    // TODO: format?
+    const result = yield scraper_1.Scraper.readTextFromSource(req.params.url, req.params.trackName);
     console.log(result);
     res.set('Content-Type', 'application/json');
     res.json(result);

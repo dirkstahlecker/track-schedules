@@ -3,17 +3,25 @@ import rp from 'request-promise';
 import cheerio from 'cheerio';
 import { grandRapidsTestString, seekonkTestString, staffordTestString, waterfordTestString } from './ocrTestString';
 import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server';
+//tslint:disable
+const crawler = require('crawler-request');
+// tslint:enable
 
 // Regex should return groups that are the full date
-const delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
-const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
-const monthDelimiterDayRegex = /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?)/gmi;
-const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
+const regexOptions = {
+  // seekonkRegex: /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi,
+  monthDelimiterDayRegex: /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?)/gmi,
+  monthDayYearRegex: /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi
+
+  // no spaces - JUN17 JULY9
+}
 
 const currentYear: number = new Date().getFullYear();
 
 abstract class DateHelper
 {
+  private static delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
+
   private static stringToMonth(text: string): number | null
   {
     const month: string = text.toLowerCase().trim();
@@ -85,15 +93,15 @@ abstract class DateHelper
     return new Date(year, month, day);
   }
 
-  public static makeDateSeekonk = (matchText: string): Date[] | null => {
-    const pieces = matchText.split(" ");
-    const month: number | null = DateHelper.stringToMonth(pieces[0]);
-    const day = Number.parseInt(pieces[1], 10);
-    return [DateHelper.makeDateBase(month, day)];
-  }
+  // public static makeDateSeekonk = (matchText: string): Date[] | null => {
+  //   const pieces = matchText.split(" ");
+  //   const month: number | null = DateHelper.stringToMonth(pieces[0]);
+  //   const day = Number.parseInt(pieces[1], 10);
+  //   return [DateHelper.makeDateBase(month, day)];
+  // }
 
-  public static makeDateNormal = (matchText: string): Date[] | null => {
-    const pieces = matchText.split(delimitersRegex);
+  public static makeDateMonthDayYear = (matchText: string): Date[] | null => {
+    const pieces = matchText.split(DateHelper.delimitersRegex);
     const monthIndex: number = Number.parseInt(pieces[0], 10) - 1;
     const day = Number.parseInt(pieces[1], 10);
     // const year = Number.parseInt(pieces[2], 10);
@@ -101,7 +109,7 @@ abstract class DateHelper
   }
 
   public static makeDateMonthDelimiterDay = (matchText: string): Date[] | null => {
-    const pieces = matchText.split(delimitersRegex);
+    const pieces = matchText.split(DateHelper.delimitersRegex);
     const monthIndex = DateHelper.stringToMonth(pieces[0]);
 
     // if pieces is 3, there's a dash in the day
@@ -130,16 +138,16 @@ abstract class DateHelper
 export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date[] | null};
 
 export const Formats = {
-  seekonk: {
-    regex: seekonkRegex,
-    makeDate: DateHelper.makeDateSeekonk
-  },
-  normal: {
-    regex: normalDateRegex,
-    makeDate: DateHelper.makeDateNormal
+  // seekonk: {
+  //   regex: regexOptions.seekonkRegex,
+  //   makeDate: DateHelper.makeDateSeekonk
+  // },
+  monthDayYear: {
+    regex: regexOptions.monthDayYearRegex,
+    makeDate: DateHelper.makeDateMonthDayYear
   },
   monthDelimiterDay: {
-    regex: monthDelimiterDayRegex,
+    regex: regexOptions.monthDelimiterDayRegex,
     makeDate: DateHelper.makeDateMonthDelimiterDay
   }
 }
@@ -147,6 +155,65 @@ export const Formats = {
 export abstract class Scraper
 {
   private static dateTrackMap: Map<number, Set<string>> = new Map(); // key is Date.getTime()
+
+  public static TESTPIN_guessFormat(sourceText: string): OcrFormat
+  {
+    return this.guessFormat(sourceText);
+  }
+
+  // take source data and figure out which format best represents it by trying all the regex and seeing
+  // which gives more matches
+  private static guessFormat(sourceText: string): OcrFormat
+  {
+    let format: OcrFormat;
+    let count: number = 0;
+
+    //tslint:disable
+    for (const key in Formats)
+    {
+      // tslint:enable
+      const value = (Formats as any)[key]; // TODO: type safety
+      const groups = sourceText.match(value.regex);
+      if (groups != null && groups.length > count) // this has more matches, so use it
+      {
+        count = groups.length;
+        format = value;
+      }
+    }
+
+    return format;
+  }
+
+  // URL entry point
+  public static async readTextFromSource(url: string, trackName: string, format: OcrFormat | null = null): Promise<void>
+  {
+    let text: string;
+    if (url.endsWith("pdf"))
+    {
+      const response = await crawler(url);
+      text = response.text;
+      console.log(text)
+    }
+    else if (url.indexOf(".jpg") > -1) // TOOD: support more than jpg
+    {
+      text = await this.executeOCR(url, false);
+      // console.log("OCR text: ");
+      // console.log(text);
+    }
+    else // webpage, do scraping
+    {
+      text = await this.executeScraping(url);
+    }
+
+    if (format == null)
+    {
+      format = this.guessFormat(text);
+    }
+
+    const dates: Date[] = this.guessDatesFromString(text, format);
+
+    Scraper.addDatesForTrack(trackName, dates);
+  }
 
   public static addTracksToDate(date: Date, trackNames: Set<string>): void
   {

@@ -1,4 +1,5 @@
-import { Scraper, Formats } from "../scraper";
+import { seekonkTestString, staffordTestString, waterfordTestString } from "../ocrTestString";
+import { Scraper, Formats, OcrFormat } from "../scraper";
 
 function compareDates(date1: Date, date2: Date): boolean
 {
@@ -10,12 +11,6 @@ function compareDates(date1: Date, date2: Date): boolean
 const currentYear = new Date().getFullYear();
 
 ////////////////////////////////////////////////////////////////////////////////////////
-
-describe("somethign else", () => {
-  it("dummy", () => {
-    expect(1).toBeTruthy();
-  })
-})
 
 describe("monthDelimiterDay", () => {
   it("monthDelimiterDay basic parsing", () => {
@@ -65,5 +60,22 @@ describe("monthDelimiterDay", () => {
     expect(compareDates(dates[0], new Date(`4-10-${currentYear}`)));
     expect(compareDates(dates[18], new Date(`12-5-${currentYear}`)));
   });
-})
+});
 
+describe("format guesser", () => {
+  it("guess format for seekonk string", () => {
+    const matchString = seekonkTestString;
+    const format: OcrFormat = Scraper.TESTPIN_guessFormat(matchString);
+    expect(format).toEqual(Formats.monthDelimiterDay);
+  });
+  it("guess format for waterford string", () => {
+    const matchString = waterfordTestString;
+    const format: OcrFormat = Scraper.TESTPIN_guessFormat(matchString);
+    expect(format).toEqual(Formats.monthDayYear);
+  });
+  it("guess format for stafford string", () => {
+    const matchString = staffordTestString;
+    const format: OcrFormat = Scraper.TESTPIN_guessFormat(matchString);
+    expect(format).toEqual(Formats.monthDelimiterDay);
+  });
+});

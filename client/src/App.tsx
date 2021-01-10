@@ -1,11 +1,13 @@
 import React from 'react';
 import './App.css';
 import {observer} from "mobx-react";
-import {makeObservable, observable, runInAction} from "mobx";
+import {makeObservable, observable, runInAction, action} from "mobx";
 
 export class AppMachine
 {
   @observable testData: any = null;
+  @observable parseDocUrl: string | null = null;
+  @observable parseDocTrackName: string | null = null;
 
   constructor()
   {
@@ -36,6 +38,13 @@ export class AppMachine
       "/api/events/add", 
       {date: date, trackname: trackname});
   }
+
+  public async parseDocument(): Promise<void>
+  {
+    return this.postRequest(
+      "/api/events/parseDocument", 
+      {url: this.parseDocUrl, trackname: this.parseDocTrackName});
+  }
 }
 
 export interface AppProps
@@ -50,13 +59,26 @@ class App extends React.Component<AppProps>
 
   private async addEvent(): Promise<void>
   {
-    const result: boolean = await this.machine.addEvent("2021-01-08","Seekonk Speedway");
+    const result: boolean = await this.machine.addEvent("2021-01-08", "Seekonk Speedway");
     runInAction(() => this.machine.testData = result);
   }
 
+  private async submitUrl(): Promise<void>
+  {
+    const result = await this.machine.parseDocument();
+  }
+
+  private onParseDocumentUrlChange = (event: React.FormEvent<HTMLInputElement>): void => {
+    runInAction(() => this.machine.parseDocUrl = event.currentTarget.value);
+  };
+
+  private onParseDocumentTrackNameChange = (event: React.FormEvent<HTMLInputElement>): void => {
+    runInAction(() => this.machine.parseDocTrackName = event.currentTarget.value);
+  };
+
   componentDidMount()
   {
-    this.addEvent();
+    // this.addEvent();
   }
 
   render()
@@ -64,6 +86,14 @@ class App extends React.Component<AppProps>
     return <div className="App">
       The value returned from the server is:
       {this.machine.testData}
+      <br/>
+      <hr/>
+      <br/>
+      Parse Document: <label htmlFor="parseDocumentInput">URL:</label>
+      <input type="text" onChange={this.onParseDocumentUrlChange}/>
+      <label htmlFor="parseDocumentTrackName">Track Name:</label>
+      <input type="text" onChange={this.onParseDocumentTrackNameChange}/>
+      <button onClick={() => this.submitUrl()}>Submit</button>
     </div>
   }
 }

@@ -3,9 +3,7 @@ import path from 'path';
 import { Database } from './database';
 import { grandRapidsTestString } from './ocrTestString';
 import { Formats, OcrFormat, Scraper } from './scraper';
-//tslint:disable
-const crawler = require('crawler-request');
-// tslint:enable
+
 
 const app = express();
 
@@ -18,30 +16,9 @@ export const staffordPdf = "http://www.thompsonspeedway.com/sites/default/files/
 export const bapsUrl = "https://www.bapsmotorspeedway.com/schedule/media.aspx?s=17800";
 export const portRoyalUrl = "https://portroyalspeedway.com/index.php/schedule/";
 
-async function readTextFromSource(url: string, trackName: string, format: OcrFormat): Promise<void>
-{
-  let text: string;
-  if (url.endsWith("pdf"))
-  {
-    const response = await crawler(url);
-    text = response.text;
-    console.log(text)
-  }
-  else if (url.indexOf(".jpg") > -1) // TOOD: support more than jpg
-  {
-    text = await Scraper.executeOCR(url, false);
-  }
-  else // webpage, do scraping
-  {
-    text = await Scraper.executeScraping(url);
-  }
 
-  // console.log("OCR text: ");
-  // console.log(text);
-  const dates: Date[] = Scraper.guessDatesFromString(text, format);
 
-  Scraper.addDatesForTrack(trackName, dates);
-}
+
 
 async function testing(): Promise<void>
 {
@@ -75,6 +52,18 @@ app.post("/api/events/add", async(req, res) => {
   console.log(`/api/events/add`);
 
   const result = await Database.addEvent(req.params.date, req.params.trackname);
+  console.log(result)
+
+	res.set('Content-Type', 'application/json');
+	res.json(result);
+});
+
+app.post("/api/events/parseDocument", async(req, res) => {
+  console.log(`/api/events/parseDocument`);
+
+  // TODO: format?
+
+  const result = await Scraper.readTextFromSource(req.params.url, req.params.trackName)
   console.log(result)
 
 	res.set('Content-Type', 'application/json');
