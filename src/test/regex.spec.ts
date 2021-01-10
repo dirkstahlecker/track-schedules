@@ -1,14 +1,6 @@
 import { seekonkTestString, staffordTestString, waterfordTestString } from "../ocrTestString";
 import { Scraper, Formats, OcrFormat } from "../scraper";
-
-function compareDates(date1: Date, date2: Date): boolean
-{
-  return date1.getFullYear() === date2.getFullYear()
-    && date1.getMonth() === date2.getMonth()
-    && date1.getDay() === date2.getDay();
-}
-
-const currentYear = new Date().getFullYear();
+import { TestUtils } from "./testUtils";
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,12 +18,11 @@ describe("monthDelimiterDay", () => {
     `;
 
     const dates: Date[] = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
-    console.log(dates)
     expect(dates.length).toEqual(8);
-    expect(compareDates(dates[0], new Date("6-16-21"))).toBeTruthy();
-    expect(compareDates(dates[1], new Date("6-19-21"))).toBeTruthy();
-    expect(compareDates(dates[4], new Date("8-19-21"))).toBeTruthy();
-    expect(compareDates(dates[7], new Date("6-5-21"))).toBeTruthy();
+    expect(TestUtils.compareDates(dates[0], new Date("6-16-21"))).toBeTruthy();
+    expect(TestUtils.compareDates(dates[1], new Date("6-19-21"))).toBeTruthy();
+    expect(TestUtils.compareDates(dates[4], new Date("8-19-21"))).toBeTruthy();
+    expect(TestUtils.compareDates(dates[7], new Date("6-5-21"))).toBeTruthy();
   });
 
   // TODO: need to implement this
@@ -39,9 +30,9 @@ describe("monthDelimiterDay", () => {
     const testString: string = `OCT. 8-10`;
     const dates: Date[] = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.length).toEqual(3);
-    expect(compareDates(dates[0], new Date(`10-8-${currentYear}`)));
-    expect(compareDates(dates[1], new Date(`10-9-${currentYear}`)));
-    expect(compareDates(dates[2], new Date(`10-10-${currentYear}`)));
+    expect(TestUtils.compareDates(dates[0], new Date(`10-8-${TestUtils.currentYear}`)));
+    expect(TestUtils.compareDates(dates[1], new Date(`10-9-${TestUtils.currentYear}`)));
+    expect(TestUtils.compareDates(dates[2], new Date(`10-10-${TestUtils.currentYear}`)));
   });
 
   it("monthDelimiterDay advanced parsing single", () => {
@@ -57,8 +48,8 @@ describe("monthDelimiterDay", () => {
 
     const dates: Date[] = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.length).toEqual(19);
-    expect(compareDates(dates[0], new Date(`4-10-${currentYear}`)));
-    expect(compareDates(dates[18], new Date(`12-5-${currentYear}`)));
+    expect(TestUtils.compareDates(dates[0], new Date(`4-10-${TestUtils.currentYear}`)));
+    expect(TestUtils.compareDates(dates[18], new Date(`12-5-${TestUtils.currentYear}`)));
   });
 });
 

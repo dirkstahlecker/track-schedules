@@ -53,7 +53,7 @@ function testing() {
         // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
         // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
         // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
-        database_1.Database.addEvent("2021-01-08", "Seekonk Speedway");
+        database_1.Database.addEvents(["2021-01-08"], ["Seekonk Speedway"]);
         // const result = await Database.getEventForTrackAndDate("2021-01-08", "Seekonk Speedway");
         // console.log(result);
         // doScraping();
@@ -62,22 +62,19 @@ function testing() {
 // testing();
 app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/add`);
-    const result = yield database_1.Database.addEvent(req.params.date, req.params.trackname);
+    const result = yield database_1.Database.addEvents([req.params.date], [req.params.trackname]);
     console.log(result);
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
 app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/parseDocument`);
-    console.log(req.body);
     const url = req.body.url;
     const trackname = req.body.trackname;
-    console.log(`url: ${url}, trackname: ${trackname}`);
     // TODO: format?
-    const result = yield scraper_1.Scraper.readTextFromSource(url, trackname);
-    console.log(result);
-    res.set('Content-Type', 'application/json');
-    res.json(result);
+    yield scraper_1.Scraper.readTextFromSource(url, trackname);
+    // res.set('Content-Type', 'application/json');
+    // res.json(result);
 }));
 app.get("/api/", (req, res) => {
     console.log("/test");

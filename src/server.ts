@@ -52,7 +52,7 @@ async function testing(): Promise<void>
   // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
   // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
 
-  Database.addEvent("2021-01-08", "Seekonk Speedway");
+  Database.addEvents(["2021-01-08"], ["Seekonk Speedway"]);
 
   // const result = await Database.getEventForTrackAndDate("2021-01-08", "Seekonk Speedway");
   // console.log(result);
@@ -73,8 +73,7 @@ async function testing(): Promise<void>
 app.post("/api/events/add", async(req, res) => {
   console.log(`/api/events/add`);
 
-  const result = await Database.addEvent(req.params.date, req.params.trackname);
-  console.log(result)
+  const result = await Database.addEvents([req.params.date], [req.params.trackname]);
 
 	res.set('Content-Type', 'application/json');
 	res.json(result);
@@ -82,20 +81,15 @@ app.post("/api/events/add", async(req, res) => {
 
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
-
-  console.log(req.body)
-
   const url: string = req.body.url;
   const trackname: string = req.body.trackname;
-  console.log(`url: ${url}, trackname: ${trackname}`)
 
   // TODO: format?
 
-  const result = await Scraper.readTextFromSource(url, trackname)
-  console.log(result)
+  await Scraper.readTextFromSource(url, trackname)
 
-	res.set('Content-Type', 'application/json');
-	res.json(result);
+	// res.set('Content-Type', 'application/json');
+	// res.json(result);
 });
 
 app.get("/api/", (req, res) => {
@@ -123,7 +117,7 @@ app.get("*", (req, res) => {
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
-	console.log(`server started on port ${port}`)
+	// console.log(`server started on port ${port}`)
 });
 
 

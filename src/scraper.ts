@@ -198,13 +198,10 @@ export abstract class Scraper
     {
       const response = await crawler(url);
       text = response.text;
-      console.log(text)
     }
     else if (url.indexOf(".jpg") > -1) // TOOD: support more than jpg
     {
       text = await this.executeOCR(url, false);
-      // console.log("OCR text: ");
-      // console.log(text);
     }
     else // webpage, do scraping
     {
@@ -242,7 +239,6 @@ export abstract class Scraper
 
       this.dateTrackMap.set(date.getTime(), existingTracks.add(trackName));
     });
-    console.log(this.dateTrackMap)
   }
 
   public static addDate(date: Date): void
@@ -275,7 +271,6 @@ export abstract class Scraper
     const { data: { text } } = await Tesseract.recognize(
       url, 'eng', { logger: (m1) => { if (log) console.log(m1) }}
     );
-    console.log("returning")
     return text;
   }
 
@@ -283,9 +278,6 @@ export abstract class Scraper
   {
     const possibleDates: Date[] = [];
     const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
-    console.log("groups: ");
-    console.log(groups);
-
     if (groups === undefined || groups == null)
     {
       console.error("Cannot guess any dates");
@@ -302,8 +294,8 @@ export abstract class Scraper
       }
     });
 
-    console.log("Possible dates: ");
-    console.log(possibleDates)
+    // console.log("Possible dates: ");
+    // console.log(possibleDates)
     return possibleDates;
   }
 

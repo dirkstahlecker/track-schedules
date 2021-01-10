@@ -1,3 +1,4 @@
+import { values } from 'mobx';
 import { Pool, QueryResult } from 'pg'
 //tslint:disable
 const pg = require('pg');
@@ -89,18 +90,54 @@ export class Database
   }
 
   // returns success
-  public static async addEvent(date: string, trackName: string): Promise<boolean>
+  public static async addEvents(dates_in: string[], trackNames_in: string[]): Promise<boolean>
   {
-    // verify that this combination hasn't already been inserted
-    const getResult = Database.getEventForTrackAndDate(date, trackName);
-    if (getResult != null)
+
+    // TODO: verify date string format
+    if (dates_in.length !== trackNames_in.length)
     {
-      console.log("Did not add event - date and trackname combination already exists");
+      throw new Error("Cannot add events - dates and tracknames aren't equal length");
+    }
+
+    const dates: string[] = [];
+    const tracknames: string[] = [];
+
+    // check if any of them exist already
+    for (let i: number = 0; i < dates_in.length; i++)
+    {
+      const d: string = dates_in[i];
+      const t: string = trackNames_in[i]
+
+      // verify that this combination hasn't already been inserted
+      // if it hasn't, add it to the list to insert
+      const getResult = await Database.getEventForTrackAndDate(d, t);
+      if (getResult != null)
+      {
+        // console.log("Did not add event - date and trackname combination already exists");
+
+      }
+      else // doesn't exist, need to add
+      {
+        dates.push(d);
+        tracknames.push(t);
+      }
+    }
+
+    if (dates.length === 0)
+    {
+      console.log("Nothing to add - everything exists already")
       return false;
+    }
+    
+    let valuesStr: string = "";
+    for (let ii: number = 0; ii < dates.length; ii++)
+    {
+      valuesStr += ` ('${dates[ii]}', '${tracknames[ii]}')${ii < dates.length - 1 ? "," : ""}`;
     }
 
     const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName) VALUES
-      ('${date}', '${trackName}');`;
+      ${valuesStr};`;
+
     return this.makeQuery(insertQuery);
   }
 
