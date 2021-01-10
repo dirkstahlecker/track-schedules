@@ -2,6 +2,9 @@ import express from 'express';
 import path from 'path';
 import { grandRapidsTestString } from './ocrTestString';
 import { Formats, OcrFormat, Scraper } from './scraper';
+//tslint:disable
+const crawler = require('crawler-request');
+// tslint:enable
 
 const app = express();
 
@@ -12,9 +15,17 @@ export const lincolnUrl = "http://lincolnspeedway.com/wp-content/uploads/2020/12
 
 async function ocr(url: string, trackName: string, format: OcrFormat): Promise<void>
 {
-  const text = await Scraper.executeOCR(
-    url,
-    false);
+  let text: string;
+  if (url.endsWith("pdf"))
+  {
+    const response = await crawler(lincolnUrl);
+    text = response.text;
+  }
+  else
+  {
+    text = await Scraper.executeOCR(url, false);
+  }
+
   // console.log("OCR text: ");
   // console.log(text);
   const dates: Date[] = Scraper.guessDatesFromString(text, format);
@@ -22,18 +33,10 @@ async function ocr(url: string, trackName: string, format: OcrFormat): Promise<v
   Scraper.addDatesForTrack(trackName, dates);
 }
 
-// ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
-// ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-// ocr(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
-// ocr(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
-// tslint:disable
-const crawler = require('crawler-request');
-
-crawler(lincolnUrl).then((response: any) => {
-    // handle response
-    console.log(response.text);
-});
-
+ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+ocr(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+ocr(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
 
 // doScraping();
 

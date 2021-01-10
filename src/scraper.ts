@@ -5,7 +5,7 @@ import { grandRapidsTestString, seekonkTestString, waterfordTestString } from '.
 import { grandRapidsUrl, seekonkUrl, waterfordUrl } from './server';
 
 // Regex should return groups that are the full date
-const delimitersRegex = /(?:\||-|\/)+/;
+const delimitersRegex = /(?:\||-|\/|\s)+/gmi;
 const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
 const monthDelimiterDayRegex = /(?:january|jan|february|feb|march|mar|april|apr|may|jun|june|july|jul|august|aug|sep|sept|september|october|oct|november|nov|december|dec)\s+[\|]*\s*(?:\d{1,2})/gmi;
 const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
