@@ -1,14 +1,18 @@
 import Tesseract from 'tesseract.js';
 import rp from 'request-promise';
 import cheerio from 'cheerio';
-import { grandRapidsTestString, seekonkTestString, waterfordTestString } from './ocrTestString';
-import { grandRapidsUrl, seekonkUrl, waterfordUrl } from './server';
+import { grandRapidsTestString, seekonkTestString, staffordTestString, waterfordTestString } from './ocrTestString';
+import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server';
 
 // Regex should return groups that are the full date
-const delimitersRegex = /(?:\||-|\/|\s)+/gmi;
+const delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
 const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
-const monthDelimiterDayRegex = /(?:january|jan|february|feb|march|mar|april|apr|may|jun|june|july|jul|august|aug|sep|sept|september|october|oct|november|nov|december|dec)\s+[\|]*\s*(?:\d{1,2})/gmi;
+const monthDelimiterDayRegex = /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|set\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2})/gmi;
 const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
+
+//OCT. 8-10
+//SEPT. 15 
+//APRIL 10-11
 
 const currentYear: number = new Date().getFullYear();
 
@@ -162,6 +166,10 @@ export abstract class Scraper
     {
       return grandRapidsTestString;
     }
+    else if (url === staffordUrl)
+    {
+      return staffordTestString;
+    }
 
     const { data: { text } } = await Tesseract.recognize(
       url, 'eng', { logger: (m1) => { if (log) console.log(m1) }}
@@ -196,19 +204,27 @@ export abstract class Scraper
     return possibleDates;
   }
 
-  public static async doScraping(): Promise<void>
+  public static async executeScraping(url: string): Promise<string>
   {
-    const url = 'https://en.wikipedia.org/wiki/List_of_Presidents_of_the_United_States';
+    // https://www.freecodecamp.org/news/the-ultimate-guide-to-web-scraping-with-node-js-daa2027dcd3/
+    const html = await rp(url);
 
-    rp(url)
-      .then((html) =>
-      {
-        console.log(cheerio('b > a', html).length);
-        console.log(cheerio('b > a', html));
-      })
-      .catch((err) =>
-      {
-        // handle error
-      });
+    const $ = cheerio.load(html);
+    cheerio('')
+
+    return html;
+
+    // const url = 'https://en.wikipedia.org/wiki/List_of_Presidents_of_the_United_States';
+
+    // rp(url)
+    //   .then((html) =>
+    //   {
+    //     console.log(cheerio('b > a', html).length);
+    //     console.log(cheerio('b > a', html));
+    //   })
+    //   .catch((err) =>
+    //   {
+    //     // handle error
+    //   });
   }
 }

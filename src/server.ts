@@ -12,18 +12,25 @@ export const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/1
 export const grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
 export const waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg";
 export const lincolnUrl = "http://lincolnspeedway.com/wp-content/uploads/2020/12/2021-Lincoln-Schedule-1.pdf";
+export const staffordUrl = "https://staffordmotorspeedway.com/schedule/";
+export const staffordPdf = "http://www.thompsonspeedway.com/sites/default/files/upload/files/FINAL%20-2021%20Oval%20Track%20Schedule%20Grid.pdf";
 
-async function ocr(url: string, trackName: string, format: OcrFormat): Promise<void>
+async function readTextFromSource(url: string, trackName: string, format: OcrFormat): Promise<void>
 {
   let text: string;
   if (url.endsWith("pdf"))
   {
-    const response = await crawler(lincolnUrl);
+    const response = await crawler(url);
     text = response.text;
+    console.log(text)
   }
-  else
+  else if (url.indexOf(".jpg") > -1) // TOOD: support more than jpg
   {
     text = await Scraper.executeOCR(url, false);
+  }
+  else // webpage, do scraping
+  {
+    text = await Scraper.executeScraping(url);
   }
 
   // console.log("OCR text: ");
@@ -33,10 +40,11 @@ async function ocr(url: string, trackName: string, format: OcrFormat): Promise<v
   Scraper.addDatesForTrack(trackName, dates);
 }
 
-ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
-ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-ocr(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
-ocr(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
+// readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+// readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+// readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+// readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
+readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
 
 // doScraping();
 
@@ -67,3 +75,7 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
 	console.log(`server started on port ${port}`)
 });
+
+
+// TODO: need to hold state or something for distance filtering (probably in a separate lookup so we don't
+//  have to worry about object equality in the set)
