@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import { Database } from './database';
 import { grandRapidsTestString } from './ocrTestString';
 import { Formats, OcrFormat, Scraper } from './scraper';
 //tslint:disable
@@ -50,7 +51,9 @@ function testing(): void
   // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
   // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
   // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
-  readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
+  // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
+
+  Database.addDate("2021-01-08")
 
   // doScraping();
 }

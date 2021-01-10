@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.portRoyalUrl = exports.bapsUrl = exports.staffordPdf = exports.staffordUrl = exports.lincolnUrl = exports.waterfordUrl = exports.grandRapidsUrl = exports.seekonkUrl = void 0;
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
+const database_1 = require("./database");
 const scraper_1 = require("./scraper");
 //tslint:disable
 const crawler = require('crawler-request');
@@ -57,7 +58,8 @@ function testing() {
     // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
     // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
     // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
-    readTextFromSource(exports.portRoyalUrl, "Port Royal Speedway", scraper_1.Formats.monthDelimiterDay);
+    // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
+    database_1.Database.addDate("2021-01-08");
     // doScraping();
 }
 testing();
