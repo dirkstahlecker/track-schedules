@@ -24,7 +24,7 @@ async function ocr(url: string, trackName: string, format: OcrFormat): Promise<v
 
 ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
 ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-// ocr(grandRapidsTestString, "Grand Rapids", Formats.monthDelimiterDay);
+ocr(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
 
 // doScraping();
 

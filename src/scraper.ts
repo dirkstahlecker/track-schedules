@@ -177,7 +177,7 @@ export abstract class Scraper
     console.log("groups: ");
     console.log(groups);
 
-    if (groups === undefined)
+    if (groups === undefined || groups == null)
     {
       console.error("Cannot guess any dates");
       return [];

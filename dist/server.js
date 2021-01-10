@@ -31,7 +31,7 @@ function ocr(url, trackName, format) {
 }
 ocr(exports.seekonkUrl, "Seekonk Speedway", scraper_1.Formats.seekonk);
 ocr(exports.waterfordUrl, "Waterford Speedbowl", scraper_1.Formats.normal);
-// ocr(grandRapidsTestString, "Grand Rapids", Formats.monthDelimiterDay);
+ocr(exports.grandRapidsUrl, "Grand Rapids", scraper_1.Formats.monthDelimiterDay);
 // doScraping();
 app.get("/test", (req, res) => {
     console.log("/test");
