@@ -85,7 +85,16 @@ class App extends React.Component<AppProps>
   private async submitGetEventsForDate(): Promise<void>
   {
     const result = await this.machine.getEventForDate(this.machine.eventDate!!);
-    runInAction(() => this.machine.eventsForDate = result.rows);
+    let rows: any[];
+    if (result.rows.length == 0)
+    {
+      rows = [];
+    }
+    else
+    {
+      rows = result.rows;
+    }
+    runInAction(() => this.machine.eventsForDate = rows);
   }
 
   private onParseDocumentUrlChange = (event: React.FormEvent<HTMLInputElement>): void => {
