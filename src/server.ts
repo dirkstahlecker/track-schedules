@@ -14,6 +14,8 @@ export const waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021
 export const lincolnUrl = "http://lincolnspeedway.com/wp-content/uploads/2020/12/2021-Lincoln-Schedule-1.pdf";
 export const staffordUrl = "https://staffordmotorspeedway.com/schedule/";
 export const staffordPdf = "http://www.thompsonspeedway.com/sites/default/files/upload/files/FINAL%20-2021%20Oval%20Track%20Schedule%20Grid.pdf";
+export const bapsUrl = "https://www.bapsmotorspeedway.com/schedule/media.aspx?s=17800";
+export const portRoyalUrl = "https://portroyalspeedway.com/index.php/schedule/";
 
 async function readTextFromSource(url: string, trackName: string, format: OcrFormat): Promise<void>
 {
@@ -46,10 +48,13 @@ function testing(): void
   // readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
   // readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
   // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
-  readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
+  // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
+  // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
+  readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
 
   // doScraping();
 }
+testing();
 
 
 

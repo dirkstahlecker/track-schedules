@@ -1,1 +1,11 @@
 server setup: https://developer.okta.com/blog/2018/11/15/node-express-typescript
+
+
+I think this is the database tutorial:
+https://blog.logrocket.com/nodejs-expressjs-postgresql-crud-rest-api-example/
+
+
+Database:
+start database on command line: psql postgres
+create database: CREATE DATABASE [name];
+connect to database: \c [name]

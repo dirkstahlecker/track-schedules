@@ -2,7 +2,7 @@ import { Scraper, Formats } from "../scraper";
 
 function compareDates(date1: Date, date2: Date): boolean
 {
-  return date1.getFullYear() === date2.getFullYear() 
+  return date1.getFullYear() === date2.getFullYear()
     && date1.getMonth() === date2.getMonth()
     && date1.getDay() === date2.getDay();
 }
@@ -20,7 +20,7 @@ describe("somethign else", () => {
 describe("monthDelimiterDay", () => {
   it("monthDelimiterDay basic parsing", () => {
     const testString: string = `
-    WED. JUNE 16 OUTLAW OPEN MODIFIED SERIES + LOCAL CLASSES TBA TBA TBA 
+    WED. JUNE 16 OUTLAW OPEN MODIFIED SERIES + LOCAL CLASSES TBA TBA TBA
     JUNE 19 - SATURDAY NIGHT SHOWDOWN ISMA SUPER MODIFIEDS, NEMA, NEMA LITES
     JUNE 26 - SATURDAY NIGHT SHOWDOWN
     Thursday | June | 24 | Thursday Night Thunder | LM, M, 55, MWM, Ps, H, PPE
@@ -29,7 +29,7 @@ describe("monthDelimiterDay", () => {
     sep. 23 An event
     jun. 5 this event
     `;
-  
+
     const dates: Date[] = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     console.log(dates)
     expect(dates.length).toEqual(8);
@@ -39,7 +39,7 @@ describe("monthDelimiterDay", () => {
     expect(compareDates(dates[7], new Date("6-5-21"))).toBeTruthy();
   });
 
-  //TODO: need to implement this
+  // TODO: need to implement this
   it("monthDelimiterDay advanced parsing single", () => {
     const testString: string = `OCT. 8-10`;
     const dates: Date[] = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
@@ -50,9 +50,9 @@ describe("monthDelimiterDay", () => {
   });
 
   it("monthDelimiterDay advanced parsing single", () => {
-    const testString: string = `SAT-SUN APRIL 
+    const testString: string = `SAT-SUN APRIL
     10-11
-    OCT. 8-10 
+    OCT. 8-10
     january | 7-8
     sept. 9 - 10
     sep. 16 - 17

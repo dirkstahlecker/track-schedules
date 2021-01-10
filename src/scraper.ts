@@ -104,7 +104,7 @@ abstract class DateHelper
     const pieces = matchText.split(delimitersRegex);
     const monthIndex = DateHelper.stringToMonth(pieces[0]);
 
-    //if pieces is 3, there's a dash in the day
+    // if pieces is 3, there's a dash in the day
     if (pieces.length === 3)
     {
       const dates: Date[] = [];

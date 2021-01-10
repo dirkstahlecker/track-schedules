@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.staffordPdf = exports.staffordUrl = exports.lincolnUrl = exports.waterfordUrl = exports.grandRapidsUrl = exports.seekonkUrl = void 0;
+exports.portRoyalUrl = exports.bapsUrl = exports.staffordPdf = exports.staffordUrl = exports.lincolnUrl = exports.waterfordUrl = exports.grandRapidsUrl = exports.seekonkUrl = void 0;
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const scraper_1 = require("./scraper");
@@ -26,6 +26,8 @@ exports.waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021/01/2
 exports.lincolnUrl = "http://lincolnspeedway.com/wp-content/uploads/2020/12/2021-Lincoln-Schedule-1.pdf";
 exports.staffordUrl = "https://staffordmotorspeedway.com/schedule/";
 exports.staffordPdf = "http://www.thompsonspeedway.com/sites/default/files/upload/files/FINAL%20-2021%20Oval%20Track%20Schedule%20Grid.pdf";
+exports.bapsUrl = "https://www.bapsmotorspeedway.com/schedule/media.aspx?s=17800";
+exports.portRoyalUrl = "https://portroyalspeedway.com/index.php/schedule/";
 function readTextFromSource(url, trackName, format) {
     return __awaiter(this, void 0, void 0, function* () {
         let text;
@@ -48,12 +50,17 @@ function readTextFromSource(url, trackName, format) {
         scraper_1.Scraper.addDatesForTrack(trackName, dates);
     });
 }
-// readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
-// readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-// readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
-// readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
-readTextFromSource(exports.staffordPdf, "Stafford Speedway", scraper_1.Formats.monthDelimiterDay);
-// doScraping();
+function testing() {
+    // readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+    // readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+    // readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+    // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
+    // readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
+    // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
+    readTextFromSource(exports.portRoyalUrl, "Port Royal Speedway", scraper_1.Formats.monthDelimiterDay);
+    // doScraping();
+}
+testing();
 app.get("/test", (req, res) => {
     console.log("/test");
     res.json({ message: "Hello World" });
