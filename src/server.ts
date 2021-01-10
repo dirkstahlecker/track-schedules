@@ -79,6 +79,16 @@ app.post("/api/events/add", async(req, res) => {
 	res.json(result);
 });
 
+app.get("/api/events/:date", async(req, res) => {
+  console.log(`/api/events/${req.params.date}`);
+
+  const result = await Database.getEventsForDate(req.params.date);
+  console.log(result);
+
+  res.set('Content-Type', 'application/json');
+	res.json(result);
+});
+
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
   const url: string = req.body.url;

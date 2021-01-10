@@ -66,6 +66,13 @@ app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, func
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
+app.get("/api/events/:date", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`/api/events/${req.params.date}`);
+    const result = yield database_1.Database.getEventsForDate(req.params.date);
+    console.log(result);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
+}));
 app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/parseDocument`);
     const url = req.body.url;
