@@ -40,13 +40,18 @@ async function readTextFromSource(url: string, trackName: string, format: OcrFor
   Scraper.addDatesForTrack(trackName, dates);
 }
 
-// readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
-// readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
-// readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
-// readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
-readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
+function testing(): void
+{
+  // readTextFromSource(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+  // readTextFromSource(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+  // readTextFromSource(grandRapidsUrl, "Grand Rapids", Formats.monthDelimiterDay);
+  // readTextFromSource(lincolnUrl, "Lincoln Speedway", Formats.monthDelimiterDay);
+  readTextFromSource(staffordPdf, "Stafford Speedway", Formats.monthDelimiterDay);
 
-// doScraping();
+  // doScraping();
+}
+
+
 
 app.get("/test", (req, res) => {
   console.log("/test")

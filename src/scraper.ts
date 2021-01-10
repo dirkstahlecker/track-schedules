@@ -7,12 +7,12 @@ import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server'
 // Regex should return groups that are the full date
 const delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
 const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
-const monthDelimiterDayRegex = /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|set\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2})/gmi;
+const monthDelimiterDayRegex = /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2})/gmi;
 const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
 
-//OCT. 8-10
-//SEPT. 15 
-//APRIL 10-11
+// OCT. 8-10
+// SEPT. 15
+// APRIL 10-11
 
 const currentYear: number = new Date().getFullYear();
 
@@ -25,39 +25,52 @@ abstract class DateHelper
     {
       case "jan":
       case "january":
+      case "jan.":
         return 0;
       case "feb":
       case "february":
+      case "feb.":
         return 1;
       case "mar":
       case "march":
+      case "mar.":
         return 2;
       case "apr":
       case "april":
+      case "apr.":
         return 3;
       case "may":
+      case "may.":
         return 4;
       case "jun":
       case "june":
+      case "jun.":
         return 5;
       case "jul":
       case "july":
+      case "jul.":
         return 6;
       case "aug":
       case "august":
+      case "aug.":
         return 7;
       case "sept":
       case "sep":
       case "september":
+      case "sep.":
+      case "sept.":
         return 8;
       case "oct":
       case "october":
+      case "oct.":
         return 9;
       case "nov":
       case "november":
+      case "nov.":
         return 10;
       case "dec":
       case "december":
+      case "dec.":
         return 11;
       default:
         console.error("Invalid date: " + text);
