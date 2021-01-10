@@ -63,7 +63,6 @@ function testing() {
 app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/add`);
     const result = yield database_1.Database.addEvents([req.params.date], [req.params.trackname]);
-    console.log(result);
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
@@ -95,7 +94,7 @@ app.get("*", (req, res) => {
 });
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
-    console.log(`server started on port ${port}`);
+    // console.log(`server started on port ${port}`)
 });
 // TODO: need to hold state or something for distance filtering (probably in a separate lookup so we don't
 //  have to worry about object equality in the set)

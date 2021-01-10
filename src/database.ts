@@ -128,7 +128,7 @@ export class Database
       console.log("Nothing to add - everything exists already")
       return false;
     }
-    
+
     let valuesStr: string = "";
     for (let ii: number = 0; ii < dates.length; ii++)
     {
@@ -145,5 +145,12 @@ export class Database
   {
     const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${date}';`;
     return Database.makeQuery(query);
+  }
+
+  public static async deleteEvent(date: string, trackname: string): Promise<void>
+  {
+    const deleteQuery: string = `DELETE FROM dateandtrack
+      WHERE eventdate='${date}' AND trackname='${trackname}';`;
+    return Database.makeQuery(deleteQuery);
   }
 }
