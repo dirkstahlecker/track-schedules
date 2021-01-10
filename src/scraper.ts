@@ -7,12 +7,8 @@ import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server'
 // Regex should return groups that are the full date
 const delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
 const seekonkRegex = /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi;
-const monthDelimiterDayRegex = /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2})/gmi;
+const monthDelimiterDayRegex = /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?)/gmi;
 const normalDateRegex = /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi;
-
-// OCT. 8-10
-// SEPT. 15
-// APRIL 10-11
 
 const currentYear: number = new Date().getFullYear();
 
@@ -89,30 +85,49 @@ abstract class DateHelper
     return new Date(year, month, day);
   }
 
-  public static makeDateSeekonk = (matchText: string): Date | null => {
+  public static makeDateSeekonk = (matchText: string): Date[] | null => {
     const pieces = matchText.split(" ");
     const month: number | null = DateHelper.stringToMonth(pieces[0]);
     const day = Number.parseInt(pieces[1], 10);
-    return DateHelper.makeDateBase(month, day);
+    return [DateHelper.makeDateBase(month, day)];
   }
 
-  public static makeDateNormal = (matchText: string): Date | null => {
+  public static makeDateNormal = (matchText: string): Date[] | null => {
     const pieces = matchText.split(delimitersRegex);
     const monthIndex: number = Number.parseInt(pieces[0], 10) - 1;
     const day = Number.parseInt(pieces[1], 10);
     // const year = Number.parseInt(pieces[2], 10);
-    return DateHelper.makeDateBase(monthIndex, day);
+    return [DateHelper.makeDateBase(monthIndex, day)];
   }
 
-  public static makeDateMonthDelimiterDay = (matchText: string): Date | null => {
+  public static makeDateMonthDelimiterDay = (matchText: string): Date[] | null => {
     const pieces = matchText.split(delimitersRegex);
     const monthIndex = DateHelper.stringToMonth(pieces[0]);
+
+    //if pieces is 3, there's a dash in the day
+    if (pieces.length === 3)
+    {
+      const dates: Date[] = [];
+      const day1: number = Number.parseInt(pieces[1].trim(), 10);
+      const day2: number = Number.parseInt(pieces[2].trim(), 10);
+
+      for (let i: number = day1; i <= day2; i++)
+      {
+        dates.push(DateHelper.makeDateBase(monthIndex, i));
+      }
+
+      return dates;
+    }
+    if (pieces.length !== 2)
+    {
+      throw new Error("incorrectly parsed match text: " + matchText);
+    }
     const day = Number.parseInt(pieces[1], 10);
-    return DateHelper.makeDateBase(monthIndex, day);
+    return [DateHelper.makeDateBase(monthIndex, day)];
   };
 }
 
-export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date | null};
+export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date[] | null};
 
 export const Formats = {
   seekonk: {
@@ -205,10 +220,12 @@ export abstract class Scraper
     }
 
     groups.forEach((group) => {
-      const date: Date | null = format.makeDate(group);
-      if (date != null)
+      const dates: Date[] | null = format.makeDate(group);
+      if (dates != null)
       {
-        possibleDates.push(date);
+        dates.forEach((date: Date) => {
+          possibleDates.push(date);
+        })
       }
     });
 
