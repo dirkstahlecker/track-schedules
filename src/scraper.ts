@@ -12,10 +12,13 @@ const crawler = require('crawler-request');
 const regexOptions = {
   // seekonkRegex: /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi,
   monthDelimiterDayRegex: /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?)/gmi,
+  dayDelimiterMonthRegex: /((?:\d{1,2})\s*[-|]?\s*(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec))/gmi,
   monthDayYearRegex: /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi
 
   // no spaces - JUN17 JULY9
 }
+
+// (?:\s*-\s*\d{1,2})?
 
 const currentYear: number = new Date().getFullYear();
 
@@ -140,10 +143,21 @@ abstract class DateHelper
     return [DateHelper.makeDateBase(monthIndex, day)];
   };
 
+  public static makeDateDayDelimiterMonth = (matchText: string): Date[] | null => {
+    const pieces = matchText.split(DateHelper.delimitersRegex);
+    if (pieces.length !== 2)
+    {
+      throw new Error("Incorrectly parsed match text: " + matchText);
+    }
+    const monthIndex = DateHelper.stringToMonth(pieces[1]);
+    const day = Number.parseInt(pieces[0], 10);
+    return [DateHelper.makeDateBase(monthIndex, day)];
+  };
+
   public static convertDateObjToDatabaseDateString(date: Date): string
   {
     const year: number = date.getFullYear();
-    let month: number | string = date.getMonth() + 1; //need to 1 index
+    let month: number | string = date.getMonth() + 1; // need to 1 index
     let day: number | string = date.getDate();
 
     if (month < 10)
@@ -172,12 +186,16 @@ export const Formats = {
   monthDelimiterDay: {
     regex: regexOptions.monthDelimiterDayRegex,
     makeDate: DateHelper.makeDateMonthDelimiterDay
+  },
+  dayDelimiterMonth: {
+    regex: regexOptions.dayDelimiterMonthRegex,
+    makeDate: DateHelper.makeDateDayDelimiterMonth
   }
 }
 
 export abstract class Scraper
 {
-  //deprecated - use database instead
+  // deprecated - use database instead
   private static dateTrackMap: Map<number, Set<string>> = new Map(); // key is Date.getTime()
 
   public static TESTPIN_guessFormat(sourceText: string): OcrFormat
@@ -206,6 +224,15 @@ export abstract class Scraper
     }
 
     return format;
+  }
+
+  // remove things that can confuse the parsing
+  public static cleanText(text: string): string
+  {
+    const cleanseTextRegex = /[\d]{1,2}:[\d]{2}/gi;
+    // remove times so they're not confused with dates
+    const cleaned = text.replace(cleanseTextRegex, "");
+    return cleaned;
   }
 
   // URL entry point
@@ -237,11 +264,22 @@ export abstract class Scraper
       format = this.guessFormat(text);
     }
 
+    text = this.cleanText(text);
+
     const dates: Date[] = this.guessDatesFromString(text, format);
 
-    // Database.addEvents(dates,) //TODO
+    const tracknames: string[] = [];
+    const convertedDates: string[] = [];
+    dates.forEach((d: Date) => {
+      // change from Date object to date string for DB
+      convertedDates.push(DateHelper.convertDateObjToDatabaseDateString(d));
 
-    Scraper.addDatesForTrack(trackName, dates); //deprecated - use database instead
+      // add an element to the trackname array for each date, so they're the same length
+      tracknames.push(trackName);
+    });
+    Database.addEvents(convertedDates, tracknames);
+
+    // Scraper.addDatesForTrack(trackName, dates); // deprecated - use database instead
   }
 
   public static addTracksToDate(date: Date, trackNames: Set<string>): void
@@ -302,6 +340,8 @@ export abstract class Scraper
 
   public static guessDatesFromString(fullText: string, format: OcrFormat): Date[]
   {
+    console.log(`format.regex: ${format.regex}`)
+
     const possibleDates: Date[] = [];
     const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
     if (groups === undefined || groups == null)

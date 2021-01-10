@@ -120,9 +120,11 @@ app.get("*", (req, res) => {
     res.sendFile('index.html', { root });
 });
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-    // console.log(`server started on port ${port}`)
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(port, () => {
+        // console.log(`server started on port ${port}`)
+    });
+}
 // TODO: need to hold state or something for distance filtering (probably in a separate lookup so we don't
 //  have to worry about object equality in the set)
 //# sourceMappingURL=server.js.map

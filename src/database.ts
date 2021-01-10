@@ -69,6 +69,11 @@ export class Database
     }
   }
 
+  private static cleanseTracknameForDB(trackname: string): string
+  {
+    const cleanseForDbRegex = /[']/gmi;
+    return trackname.replace(cleanseForDbRegex, "");
+  }
 
 
   // Expects a single row. If more than 1, throw and error. If 0, return null
@@ -92,7 +97,6 @@ export class Database
   // returns success
   public static async addEvents(dates_in: string[], trackNames_in: string[]): Promise<boolean>
   {
-
     // TODO: verify date string format
     if (dates_in.length !== trackNames_in.length)
     {
@@ -119,7 +123,7 @@ export class Database
       else // doesn't exist, need to add
       {
         dates.push(d);
-        tracknames.push(t);
+        tracknames.push(this.cleanseTracknameForDB(t));
       }
     }
 
@@ -138,7 +142,8 @@ export class Database
     const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName) VALUES
       ${valuesStr};`;
 
-    return this.makeQuery(insertQuery);
+      console.log(`insertQuery: ${insertQuery}`)
+    // return this.makeQuery(insertQuery);
   }
 
   public static async getEventsForDate(date: string): Promise<any>
