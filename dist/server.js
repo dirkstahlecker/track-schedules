@@ -12,20 +12,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.waterfordUrl = exports.grandRapidsUrl = exports.seekonkUrl = void 0;
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const scraper_1 = require("./scraper");
 const app = express_1.default();
-function ocr() {
+exports.seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
+exports.grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
+exports.waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg";
+function ocr(url, trackName, format) {
     return __awaiter(this, void 0, void 0, function* () {
-        const text = yield scraper_1.Scraper.executeOCR("https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96", true);
+        const text = yield scraper_1.Scraper.executeOCR(url, false);
         // console.log("OCR text: ");
         // console.log(text);
-        const dates = scraper_1.Scraper.guessDatesFromString(text, scraper_1.Formats.monthDelimiterDay);
-        scraper_1.Scraper.addDatesForTrack("Waterford Speedbowl", dates);
+        const dates = scraper_1.Scraper.guessDatesFromString(text, format);
+        scraper_1.Scraper.addDatesForTrack(trackName, dates);
     });
 }
-ocr();
+ocr(exports.seekonkUrl, "Seekonk Speedway", scraper_1.Formats.seekonk);
+ocr(exports.waterfordUrl, "Waterford Speedbowl", scraper_1.Formats.normal);
+// ocr(grandRapidsTestString, "Grand Rapids", Formats.monthDelimiterDay);
 // doScraping();
 app.get("/test", (req, res) => {
     console.log("/test");

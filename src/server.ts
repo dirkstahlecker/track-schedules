@@ -1,22 +1,31 @@
 import express from 'express';
 import path from 'path';
-import { Formats, Scraper } from './scraper';
+import { grandRapidsTestString } from './ocrTestString';
+import { Formats, OcrFormat, Scraper } from './scraper';
 
 const app = express();
 
-async function ocr(): Promise<void>
+export const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
+export const grandRapidsUrl = "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96";
+export const waterfordUrl = "https://www.speedbowlct.com/wp-content/uploads/2021/01/2021-New-London-Waterford-Speedbowl-Event-Schedule-scaled.jpg";
+
+
+async function ocr(url: string, trackName: string, format: OcrFormat): Promise<void>
 {
   const text = await Scraper.executeOCR(
-    "https://scontent-lax3-1.xx.fbcdn.net/v/t1.0-9/136045236_3924823007580721_1149603865612359472_n.jpg?_nc_cat=100&ccb=2&_nc_sid=8bfeb9&_nc_ohc=H2OACe9KsHYAX-fGdlp&_nc_ht=scontent-lax3-1.xx&oh=9f33be81e510cebdc9bc83961dcdf037&oe=601E2A96",
-    true);
+    url,
+    false);
   // console.log("OCR text: ");
   // console.log(text);
-  const dates: Date[] = Scraper.guessDatesFromString(text, Formats.monthDelimiterDay);
+  const dates: Date[] = Scraper.guessDatesFromString(text, format);
 
-  Scraper.addDatesForTrack("Waterford Speedbowl", dates);
+  Scraper.addDatesForTrack(trackName, dates);
 }
 
-ocr()
+ocr(seekonkUrl, "Seekonk Speedway", Formats.seekonk);
+ocr(waterfordUrl, "Waterford Speedbowl", Formats.normal);
+// ocr(grandRapidsTestString, "Grand Rapids", Formats.monthDelimiterDay);
+
 // doScraping();
 
 app.get("/test", (req, res) => {

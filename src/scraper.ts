@@ -1,10 +1,8 @@
 import Tesseract from 'tesseract.js';
 import rp from 'request-promise';
 import cheerio from 'cheerio';
-import { grandRapidsTestString, waterfordTestString } from './ocrTestString';
-
-const seekonkUrl = 'https://seekonkspeedway.com/wp-content/uploads/2020/12/12021-SCH-POSTER.jpg';
-
+import { grandRapidsTestString, seekonkTestString, waterfordTestString } from './ocrTestString';
+import { grandRapidsUrl, seekonkUrl, waterfordUrl } from './server';
 
 // Regex should return groups that are the full date
 const delimitersRegex = /(?:\||-|\/)+/;
@@ -97,7 +95,7 @@ abstract class DateHelper
   };
 }
 
-type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date | null};
+export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date | null};
 
 export const Formats = {
   seekonk: {
@@ -116,34 +114,35 @@ export const Formats = {
 
 export abstract class Scraper
 {
-  private static dateTrackMap: Map<Date, Set<string>> = new Map();
+  private static dateTrackMap: Map<number, Set<string>> = new Map(); // key is Date.getTime()
 
   public static addTracksToDate(date: Date, trackNames: Set<string>): void
   {
-    const existingTracks: Set<string> = this.dateTrackMap.get(date);
-    this.dateTrackMap.set(date, new Set([...existingTracks, ...trackNames]));
+    const existingTracks: Set<string> = this.dateTrackMap.get(date.getTime());
+    this.dateTrackMap.set(date.getTime(), new Set([...existingTracks, ...trackNames]));
   }
 
   public static addDatesForTrack(trackName: string, dates: Date[]): void
   {
     dates.forEach((date: Date) => {
-      const existingTracks: Set<string> | undefined = this.dateTrackMap.get(date);
-      // const newTracks: Set<string> = existingTracks === undefined
-      //   ? new Set<string>(trackName) : new Set([...existingTracks, trackName]);
-      let newTracks: Set<string> = new Set();
-      newTracks.add(trackName);
-      if (existingTracks !== undefined)
+      const existingTracks: Set<string> | undefined = this.dateTrackMap.get(date.getTime());
+
+      if (existingTracks === undefined) // just add the new track
       {
-        newTracks = new Set([...existingTracks]);
+        this.dateTrackMap.set(date.getTime(), new Set<string>([trackName]));
+        return;
       }
-      this.dateTrackMap.set(date, newTracks);
+
+      // need to add the new track to the existing set of tracks
+
+      this.dateTrackMap.set(date.getTime(), existingTracks.add(trackName));
     });
     console.log(this.dateTrackMap)
   }
 
   public static addDate(date: Date): void
   {
-    this.dateTrackMap.set(date, new Set<string>());
+    this.dateTrackMap.set(date.getTime(), new Set<string>());
   }
 
   // if a date shows up in the OCR, we assume there's a race on that event
@@ -151,8 +150,18 @@ export abstract class Scraper
   public static async executeOCR(url: string, log: boolean = false): Promise<string>
   {
     // short-circuit for testing
-    // return Promise.resolve(ocrTestString);
-    return Promise.resolve(grandRapidsTestString);
+    if (url === seekonkUrl)
+    {
+      return seekonkTestString;
+    }
+    else if (url === waterfordUrl)
+    {
+      return waterfordTestString;
+    }
+    else if (url === grandRapidsUrl)
+    {
+      return grandRapidsTestString;
+    }
 
     const { data: { text } } = await Tesseract.recognize(
       url, 'eng', { logger: (m1) => { if (log) console.log(m1) }}
