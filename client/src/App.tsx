@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import {observer} from "mobx-react";
 import {makeObservable, observable, runInAction, action} from "mobx";
+import { DbRow } from './Types';
 
 export class AppMachine
 {
@@ -9,6 +10,7 @@ export class AppMachine
   @observable parseDocUrl: string | null = null;
   @observable parseDocTrackName: string | null = null;
   @observable eventDate: string | null = null;
+  @observable returnedRowsFromParseDocument: any = null;
 
   @observable eventsForDate: any = null;
 
@@ -53,7 +55,7 @@ export class AppMachine
     return this.getRequest(`/api/events/${date}`)
   }
 
-  public async parseDocument(): Promise<void>
+  public async parseDocument(): Promise<DbRow[] | null>
   {
     return this.postRequest(
       "/api/events/parseDocument", 
@@ -79,7 +81,8 @@ class App extends React.Component<AppProps>
 
   private async submitUrl(): Promise<void>
   {
-    const result = await this.machine.parseDocument();
+    const result: DbRow[] | null = await this.machine.parseDocument();
+    runInAction(() => this.machine.returnedRowsFromParseDocument = result);
   }
 
   private async submitGetEventsForDate(): Promise<void>
@@ -114,8 +117,30 @@ class App extends React.Component<AppProps>
     // this.addEvent();
   }
 
-  private renderListOfTracks(rows: Object[]): JSX.Element
+  private renderDbRows(rows: DbRow[] | null): JSX.Element
   {
+    if (rows == null)
+    {
+      return <></>;
+    }
+    return <div>
+      {
+        rows.map((row: any) => {
+          return <div>
+            {row.trackname}:&nbsp;
+            {row.date}
+          </div>;
+        })
+      }
+    </div>
+  }
+
+  private renderTracksList(rows: DbRow[] | null): JSX.Element
+  {
+    if (rows == null)
+    {
+      return <></>;
+    }
     return <div>
       {
         rows.map((row: any) => {
@@ -138,6 +163,10 @@ class App extends React.Component<AppProps>
       <label htmlFor="parseDocumentTrackName">Track Name:</label>
       <input type="text" name="parseDocumentTrackName" onChange={this.onParseDocumentTrackNameChange}/>
       <button onClick={() => this.submitUrl()}>Submit</button>
+      {
+        this.machine.returnedRowsFromParseDocument != null && 
+        this.renderDbRows(this.machine.returnedRowsFromParseDocument)
+      }
       <hr/>
       Get events for date:<br/>
       <label htmlFor="getEventsForDateInput">Date: </label>
@@ -153,7 +182,7 @@ class App extends React.Component<AppProps>
       }
       {
         this.machine.eventsForDate != null &&
-        this.renderListOfTracks(this.machine.eventsForDate)
+        this.renderTracksList(this.machine.eventsForDate)
       }
     </div>
   }
