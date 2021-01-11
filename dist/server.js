@@ -125,6 +125,7 @@ if (process.env.NODE_ENV !== 'test') {
         // console.log(`server started on port ${port}`)
     });
 }
-// TODO: need to hold state or something for distance filtering (probably in a separate lookup so we don't
+// TODO: need to hold location or something for distance filtering (probably in a separate lookup so we don't
 //  have to worry about object equality in the set)
+// TODO: case insensitive compare for track names
 //# sourceMappingURL=server.js.map

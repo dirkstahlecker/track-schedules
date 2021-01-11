@@ -80,7 +80,8 @@ export class Database
   public static async getEventForTrackAndDate(date: string, trackName: string): Promise<DbRow | null>
   {
     const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${date}'
-      AND trackname='${trackName}';`;
+      AND LOWER(trackname)=LOWER('${this.cleanseTracknameForDB(trackName)}');`;
+    console.log(`query: ${query}`)
     const result = await Database.makeQuery(query, true);
 
     if (result == null || result.rows.length === 0)
@@ -91,6 +92,7 @@ export class Database
     {
       throw new Error(`DB Invariant: more than one row for ${date} and ${trackName}`);
     }
+    console.log(`RETURNING: ${result.rows}`)
     return Promise.resolve(result.rows[0]);
   }
 
@@ -115,15 +117,14 @@ export class Database
       // verify that this combination hasn't already been inserted
       // if it hasn't, add it to the list to insert
       const getResult = await Database.getEventForTrackAndDate(d, t);
-      if (getResult != null)
-      {
-        // console.log("Did not add event - date and trackname combination already exists");
-
-      }
-      else // doesn't exist, need to add
+      if (getResult == null) // doesn't exist, need to add
       {
         dates.push(d);
         tracknames.push(this.cleanseTracknameForDB(t));
+      }
+      else
+      {
+        console.log("Did not add event - date and trackname combination already exists");
       }
     }
 
@@ -141,9 +142,7 @@ export class Database
 
     const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName) VALUES
       ${valuesStr};`;
-
-      console.log(`insertQuery: ${insertQuery}`)
-    // return this.makeQuery(insertQuery);
+    return this.makeQuery(insertQuery);
   }
 
   public static async getEventsForDate(date: string): Promise<any>
@@ -155,7 +154,7 @@ export class Database
   public static async deleteEvent(date: string, trackname: string): Promise<void>
   {
     const deleteQuery: string = `DELETE FROM dateandtrack
-      WHERE eventdate='${date}' AND trackname='${trackname}';`;
+      WHERE eventdate='${date}' AND LOWER(trackname)=LOWER('${this.cleanseTracknameForDB(trackname)}');`;
     return Database.makeQuery(deleteQuery);
   }
 }

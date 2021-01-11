@@ -340,8 +340,6 @@ export abstract class Scraper
 
   public static guessDatesFromString(fullText: string, format: OcrFormat): Date[]
   {
-    console.log(`format.regex: ${format.regex}`)
-
     const possibleDates: Date[] = [];
     const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
     if (groups === undefined || groups == null)
