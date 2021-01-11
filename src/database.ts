@@ -81,7 +81,6 @@ export class Database
   {
     const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${date}'
       AND LOWER(trackname)=LOWER('${this.cleanseTracknameForDB(trackName)}');`;
-    console.log(`query: ${query}`)
     const result = await Database.makeQuery(query, true);
 
     if (result == null || result.rows.length === 0)
@@ -96,8 +95,8 @@ export class Database
     return Promise.resolve(result.rows[0]);
   }
 
-  // returns success
-  public static async addEvents(dates_in: string[], trackNames_in: string[]): Promise<boolean>
+  // returns added rows
+  public static async addEvents(dates_in: string[], trackNames_in: string[]): Promise<DbRow[] | null>
   {
     // TODO: verify date string format
     if (dates_in.length !== trackNames_in.length)
@@ -131,7 +130,7 @@ export class Database
     if (dates.length === 0)
     {
       console.log("Nothing to add - everything exists already")
-      return false;
+      return null;
     }
 
     let valuesStr: string = "";
@@ -141,8 +140,9 @@ export class Database
     }
 
     const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName) VALUES
-      ${valuesStr};`;
-    return this.makeQuery(insertQuery);
+      ${valuesStr} RETURNING *;`;
+    const result = await this.makeQuery(insertQuery);
+    return result.rows;
   }
 
   public static async getEventsForDate(date: string): Promise<any>

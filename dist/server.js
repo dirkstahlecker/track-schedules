@@ -97,10 +97,12 @@ app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, vo
         console.error("trackname is null");
         return;
     }
-    // TODO: format?
-    yield scraper_1.Scraper.readTextFromSource(url, trackname); // guess format
-    // res.set('Content-Type', 'application/json');
-    // res.json(result);
+    // TODO: allow manually specifying format?
+    const result = yield scraper_1.Scraper.readTextFromSource(url, trackname); // guess format
+    console.log(`result returning from API:`);
+    console.log(result);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
 }));
 app.get("/api/", (req, res) => {
     console.log("/test");

@@ -3,7 +3,7 @@ import rp from 'request-promise';
 import cheerio from 'cheerio';
 import { grandRapidsTestString, seekonkTestString, staffordTestString, waterfordTestString } from './ocrTestString';
 import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server';
-import { Database } from './database';
+import { Database, DbRow } from './database';
 //tslint:disable
 const crawler = require('crawler-request');
 // tslint:enable
@@ -236,7 +236,7 @@ export abstract class Scraper
   }
 
   // URL entry point
-  public static async readTextFromSource(url: string, trackName: string, format: OcrFormat | null = null): Promise<void>
+  public static async readTextFromSource(url: string, trackName: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
   {
     if (url == null || url === undefined)
     {
@@ -277,7 +277,7 @@ export abstract class Scraper
       // add an element to the trackname array for each date, so they're the same length
       tracknames.push(trackName);
     });
-    Database.addEvents(convertedDates, tracknames);
+    return Database.addEvents(convertedDates, tracknames);
 
     // Scraper.addDatesForTrack(trackName, dates); // deprecated - use database instead
   }

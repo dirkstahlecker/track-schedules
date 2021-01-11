@@ -121,12 +121,14 @@ app.post("/api/events/parseDocument", async(req, res) => {
     return;
   }
 
-  // TODO: format?
+  // TODO: allow manually specifying format?
 
-  await Scraper.readTextFromSource(url, trackname); // guess format
+  const result = await Scraper.readTextFromSource(url, trackname); // guess format
+  console.log(`result returning from API:`);
+  console.log(result)
 
-	// res.set('Content-Type', 'application/json');
-	// res.json(result);
+	res.set('Content-Type', 'application/json');
+	res.json(result);
 });
 
 app.get("/api/", (req, res) => {
