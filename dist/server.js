@@ -87,10 +87,13 @@ app.get("/api/events/:date", (req, res) => __awaiter(void 0, void 0, void 0, fun
 app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/parseDocument`);
     const url = req.body.url;
+    const text = req.body.text;
     const trackname = req.body.trackname;
-    console.log(`url: ${url}, trackname: ${trackname}`);
-    if (url == null || url === "") {
-        console.error("date is null");
+    console.log(`url: ${url}, text: ${text}, trackname: ${trackname}`);
+    // TODO: consolidate url and text or figure out which to use or something
+    if ((url == null || url === "") && (text == null || text === "")) {
+        console.error("no url/text input");
+        ;
         return;
     }
     if (trackname == null || trackname === "") {
@@ -98,7 +101,7 @@ app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, vo
         return;
     }
     // TODO: allow manually specifying format?
-    const result = yield scraper_1.Scraper.readTextFromSource(url, trackname); // guess format
+    const result = yield scraper_1.Scraper.readTextFromSource(url, text, trackname); // guess format
     console.log(`result returning from API:`);
     console.log(result);
     res.set('Content-Type', 'application/json');
@@ -129,5 +132,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 // TODO: need to hold location or something for distance filtering (probably in a separate lookup so we don't
 //  have to worry about object equality in the set)
-// TODO: case insensitive compare for track names
+// TODO: endpoint for getting all the tracks that have been added
+// Better to just copy the entire page and paste that in instead of scraping html
+// Duplicates for some reason - see NHMS
 //# sourceMappingURL=server.js.map

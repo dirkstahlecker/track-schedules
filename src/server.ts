@@ -106,13 +106,15 @@ app.get("/api/events/:date", async(req, res) => {
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
   const url: string = req.body.url;
+  const text: string = req.body.text;
   const trackname: string = req.body.trackname;
 
-  console.log(`url: ${url}, trackname: ${trackname}`)
+  console.log(`url: ${url}, text: ${text}, trackname: ${trackname}`)
 
-  if (url == null || url === "")
+  // TODO: consolidate url and text or figure out which to use or something
+  if ((url == null || url === "") && (text == null || text === ""))
   {
-    console.error("date is null");
+    console.error("no url/text input");;
     return;
   }
   if (trackname == null || trackname === "")
@@ -123,7 +125,7 @@ app.post("/api/events/parseDocument", async(req, res) => {
 
   // TODO: allow manually specifying format?
 
-  const result = await Scraper.readTextFromSource(url, trackname); // guess format
+  const result = await Scraper.readTextFromSource(url, text, trackname); // guess format
   console.log(`result returning from API:`);
   console.log(result)
 
@@ -166,4 +168,6 @@ if (process.env.NODE_ENV !== 'test') {
 // TODO: need to hold location or something for distance filtering (probably in a separate lookup so we don't
 //  have to worry about object equality in the set)
 
-// TODO: case insensitive compare for track names
+// TODO: endpoint for getting all the tracks that have been added
+// Better to just copy the entire page and paste that in instead of scraping html
+// Duplicates for some reason - see NHMS

@@ -191,6 +191,11 @@ export const Formats = {
     regex: regexOptions.dayDelimiterMonthRegex,
     makeDate: DateHelper.makeDateDayDelimiterMonth
   }
+
+  // TODO: Figure out how to deal with month only being at the beginning of the month like selinsgrove
+  // http://www.selinsgrovespeedway.com/images/2021_Speedway_Schedule.pdf
+  // https://hagerstownspeedway.com/index.php/schedule/
+
 }
 
 export abstract class Scraper
@@ -229,39 +234,64 @@ export abstract class Scraper
   // remove things that can confuse the parsing
   public static cleanText(text: string): string
   {
-    const cleanseTextRegex = /[\d]{1,2}:[\d]{2}/gi;
+    const cleanseTextRegex = /(?:[\d]{1,2}:[\d]{2})\s*(?:[P|A]M)?/gi;
     // remove times so they're not confused with dates
     const cleaned = text.replace(cleanseTextRegex, "");
     return cleaned;
   }
 
   // URL entry point
-  public static async readTextFromSource(url: string, trackName: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
+  public static async readTextFromSource(url: string, text_in: string, trackName: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
   {
-    if (url == null || url === undefined)
+    if ((url == null || url === "") && (text_in == null || text_in === ""))
     {
-      console.error("Cannot read text from source - source URL is null");
+      console.error("Cannot read text from source - source URL and text are null");
       return;
     }
 
+    console.log("@@@@@@@@@@@@@@@")
+    console.log(text_in)
+    console.log("@@@@@@@@@@@@@@@")
+
+    const imageExtensionsRegex = /(?:\.png)|(?:\.jpg)/gmi; // TODO: support more extensions
+
+    // TODO: conslidate url and text, or choose which to use, or something
     let text: string;
-    if (url.endsWith("pdf"))
+    if (text_in != null && text_in !== "") // if we have text, just use it
     {
+      console.log("Using raw text");
+      text = text_in;
+    }
+    else if (url.endsWith("pdf")) // PDF
+    {
+      console.log("using pdf");
       const response = await crawler(url);
       text = response.text;
     }
-    else if (url.indexOf(".jpg") > -1) // TOOD: support more than jpg
+    else if (url.match(imageExtensionsRegex) != null) // image
     {
-      text = await this.executeOCR(url, false);
+      console.log("using ocr");
+      text = await this.executeOCR(url, true);
     }
     else // webpage, do scraping
     {
+      console.log("using web scraping");
       text = await this.executeScraping(url);
     }
+
+    if (text === undefined || text === "")
+    {
+      console.log("Failed to parse text.");
+      return null;
+    }
+
+    console.log("========================\nTEXT: ")
+    console.log(text);
 
     if (format == null)
     {
       format = this.guessFormat(text);
+      console.log("opted for format " + format.regex);
     }
 
     text = this.cleanText(text);
@@ -335,6 +365,11 @@ export abstract class Scraper
     const { data: { text } } = await Tesseract.recognize(
       url, 'eng', { logger: (m1) => { if (log) console.log(m1) }}
     );
+    if (log)
+    {
+      console.log("Returning the following text from OCR:")
+      console.log(text);
+    }
     return text;
   }
 

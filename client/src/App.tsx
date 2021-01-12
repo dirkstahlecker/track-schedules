@@ -8,6 +8,7 @@ export class AppMachine
 {
   @observable testData: any = null;
   @observable parseDocUrl: string | null = null;
+  @observable parseDocText: string | null = null;
   @observable parseDocTrackName: string | null = null;
   @observable eventDate: string | null = null;
   @observable returnedRowsFromParseDocument: any = null;
@@ -57,9 +58,10 @@ export class AppMachine
 
   public async parseDocument(): Promise<DbRow[] | null>
   {
+    //TODO: consolidate url and text or figure out which to use or something
     return this.postRequest(
       "/api/events/parseDocument", 
-      {url: this.parseDocUrl, trackname: this.parseDocTrackName});
+      {url: this.parseDocUrl, text: this.parseDocText, trackname: this.parseDocTrackName});
   }
 }
 
@@ -104,6 +106,10 @@ class App extends React.Component<AppProps>
     runInAction(() => this.machine.parseDocUrl = event.currentTarget.value);
   };
 
+  private onParseDocumentTextChange = (event: React.FormEvent<HTMLInputElement>): void => {
+    runInAction(() => this.machine.parseDocText = event.currentTarget.value);
+  }
+
   private onParseDocumentTrackNameChange = (event: React.FormEvent<HTMLInputElement>): void => {
     runInAction(() => this.machine.parseDocTrackName = event.currentTarget.value);
   };
@@ -125,11 +131,14 @@ class App extends React.Component<AppProps>
     }
     return <div>
       {
-        rows.map((row: any) => {
-          return <div>
-            {row.trackname}:&nbsp;
-            {row.date}
-          </div>;
+        rows.map((row: DbRow) => {
+          return <>
+            <div>
+              {row.trackname}:&nbsp;
+              {row.eventdate}
+            </div>
+            <br/>
+          </>;
         })
       }
     </div>
@@ -158,14 +167,23 @@ class App extends React.Component<AppProps>
       <br/>
       <hr/>
       <br/>
-      Parse Document: <label htmlFor="parseDocumentInput">URL:</label>
+      Parse Document (URL or text):
+      <label htmlFor="parseDocumentInput">URL:</label>
       <input type="text" name="parseDocumentInput" onChange={this.onParseDocumentUrlChange}/>
+      <label htmlFor="parseDocumentTextInput">Text:</label>
+      <input type="text" name="parseDocumentTextInput" onChange={this.onParseDocumentTextChange}/>
+      <br/>
       <label htmlFor="parseDocumentTrackName">Track Name:</label>
       <input type="text" name="parseDocumentTrackName" onChange={this.onParseDocumentTrackNameChange}/>
       <button onClick={() => this.submitUrl()}>Submit</button>
+      <br/>
       {
         this.machine.returnedRowsFromParseDocument != null && 
-        this.renderDbRows(this.machine.returnedRowsFromParseDocument)
+        <>
+          Inserted {this.machine.returnedRowsFromParseDocument.length} rows.
+          <br/>
+          {this.renderDbRows(this.machine.returnedRowsFromParseDocument)}
+        </>
       }
       <hr/>
       Get events for date:<br/>
