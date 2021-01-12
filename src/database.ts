@@ -91,7 +91,6 @@ export class Database
     {
       throw new Error(`DB Invariant: more than one row for ${date} and ${trackName}`);
     }
-    console.log(`RETURNING: ${result.rows}`)
     return Promise.resolve(result.rows[0]);
   }
 

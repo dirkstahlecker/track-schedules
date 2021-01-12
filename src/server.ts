@@ -106,15 +106,13 @@ app.get("/api/events/:date", async(req, res) => {
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
   const url: string = req.body.url;
-  const text: string = req.body.text;
   const trackname: string = req.body.trackname;
 
-  console.log(`url: ${url}, text: ${text}, trackname: ${trackname}`)
+  console.log(`url: ${url}, trackname: ${trackname}`)
 
-  // TODO: consolidate url and text or figure out which to use or something
-  if ((url == null || url === "") && (text == null || text === ""))
+  if (url == null || url === "")
   {
-    console.error("no url/text input");;
+    console.error("date is null");
     return;
   }
   if (trackname == null || trackname === "")
@@ -125,7 +123,7 @@ app.post("/api/events/parseDocument", async(req, res) => {
 
   // TODO: allow manually specifying format?
 
-  const result = await Scraper.readTextFromSource(url, text, trackname); // guess format
+  const result = await Scraper.readTextFromSource(url, trackname); // guess format
   console.log(`result returning from API:`);
   console.log(result)
 

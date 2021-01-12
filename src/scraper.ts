@@ -31,7 +31,7 @@ abstract class DateHelper
 {
   private static delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
 
-  private static stringToMonth(text: string): number | null
+  private static stringToMonthIndex(text: string): number | null
   {
     const month: string = text.toLowerCase().trim();
     switch (month)
@@ -91,15 +91,16 @@ abstract class DateHelper
     }
   }
 
-  // isolate the actual date object creation in case we need to do something with timezones
-  private static makeDateBase(month: number | null, day: number | null, year: number = currentYear): Date | null
+  // return a string in the proper format for the database: YYYY-MM-DD
+  private static makeDateBase(monthIndex: number | null, day: number | null, year: number = currentYear): string | null
   {
-    if (month == null || day == null)
+    if (monthIndex == null || day == null)
     {
-      console.error(`Cannot make date - invalid arguments. month: ${month}, day: ${day}, year: ${year}`);
+      console.error(`Cannot make date - invalid arguments. month: ${monthIndex}, day: ${day}, year: ${year}`);
       return null;
     }
-    return new Date(year, month, day);
+
+    return this.convertNumbersToDatabaseDateString(monthIndex, day, year);
   }
 
   // public static makeDateSeekonk = (matchText: string): Date[] | null => {
@@ -109,28 +110,32 @@ abstract class DateHelper
   //   return [DateHelper.makeDateBase(month, day)];
   // }
 
-  public static makeDateMonthDayYear = (matchText: string): Date[] | null => {
+  public static makeDateMonthDayYear = (matchText: string): Set<string> | null => {
     const pieces = matchText.split(DateHelper.delimitersRegex);
     const monthIndex: number = Number.parseInt(pieces[0], 10) - 1;
     const day = Number.parseInt(pieces[1], 10);
     // const year = Number.parseInt(pieces[2], 10);
-    return [DateHelper.makeDateBase(monthIndex, day)];
+    const r = new Set<string>();
+    r.add(DateHelper.makeDateBase(monthIndex, day));
+    console.log("r:")
+    console.log(r)
+    return r;
   }
 
-  public static makeDateMonthDelimiterDay = (matchText: string): Date[] | null => {
+  public static makeDateMonthDelimiterDay = (matchText: string): Set<string> | null => {
     const pieces = matchText.split(DateHelper.delimitersRegex);
-    const monthIndex = DateHelper.stringToMonth(pieces[0]);
+    const monthIndex = DateHelper.stringToMonthIndex(pieces[0]);
 
     // if pieces is 3, there's a dash in the day
     if (pieces.length === 3)
     {
-      const dates: Date[] = [];
+      const dates: Set<string> = new Set();
       const day1: number = Number.parseInt(pieces[1].trim(), 10);
       const day2: number = Number.parseInt(pieces[2].trim(), 10);
 
       for (let i: number = day1; i <= day2; i++)
       {
-        dates.push(DateHelper.makeDateBase(monthIndex, i));
+        dates.add(DateHelper.makeDateBase(monthIndex, i));
       }
 
       return dates;
@@ -140,39 +145,49 @@ abstract class DateHelper
       throw new Error("incorrectly parsed match text: " + matchText);
     }
     const day = Number.parseInt(pieces[1], 10);
-    return [DateHelper.makeDateBase(monthIndex, day)];
+
+    const ret = new Set<string>();
+    ret.add(DateHelper.makeDateBase(monthIndex, day));
+    return ret;
   };
 
-  public static makeDateDayDelimiterMonth = (matchText: string): Date[] | null => {
+  public static makeDateDayDelimiterMonth = (matchText: string): string[] | null => {
     const pieces = matchText.split(DateHelper.delimitersRegex);
     if (pieces.length !== 2)
     {
       throw new Error("Incorrectly parsed match text: " + matchText);
     }
-    const monthIndex = DateHelper.stringToMonth(pieces[1]);
+    const monthIndex = DateHelper.stringToMonthIndex(pieces[1]);
     const day = Number.parseInt(pieces[0], 10);
     return [DateHelper.makeDateBase(monthIndex, day)];
   };
 
+  public static convertNumbersToDatabaseDateString(monthIndex_in: number, day_in: number, year_in: number = currentYear): string
+  {
+    monthIndex_in += 1;
+    let month: string = String(monthIndex_in);
+    let day: string = String(day_in);
+    if (monthIndex_in < 10)
+    {
+      month = `0${monthIndex_in}`;
+    }
+    if (day_in < 10)
+    {
+      day = `0${day_in}`;
+    }
+    return `${year_in}-${month}-${day}`;
+  }
+
   public static convertDateObjToDatabaseDateString(date: Date): string
   {
     const year: number = date.getFullYear();
-    let month: number | string = date.getMonth() + 1; // need to 1 index
-    let day: number | string = date.getDate();
-
-    if (month < 10)
-    {
-      month = `0${month}`;
-    }
-    if (day < 10)
-    {
-      day = `0${day}`;
-    }
-    return `${year}-${month}-${day}`;
+    const monthIndex: number | string = date.getMonth();
+    const day: number | string = date.getDate();
+    return this.convertNumbersToDatabaseDateString(monthIndex, day, year);
   }
 }
 
-export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Date[] | null};
+export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Set<string> | null};
 
 export const Formats = {
   // seekonk: {
@@ -241,42 +256,34 @@ export abstract class Scraper
   }
 
   // URL entry point
-  public static async readTextFromSource(url: string, text_in: string, trackName: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
+  public static async readTextFromSource(urlOrText: string, trackName: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
   {
-    if ((url == null || url === "") && (text_in == null || text_in === ""))
+    if (urlOrText == null || urlOrText === undefined || urlOrText === "")
     {
-      console.error("Cannot read text from source - source URL and text are null");
+      console.error("Cannot read text from source - source text is blank or null");
       return;
     }
 
-    console.log("@@@@@@@@@@@@@@@")
-    console.log(text_in)
-    console.log("@@@@@@@@@@@@@@@")
-
     const imageExtensionsRegex = /(?:\.png)|(?:\.jpg)/gmi; // TODO: support more extensions
 
-    // TODO: conslidate url and text, or choose which to use, or something
+    urlOrText = urlOrText.trim();
     let text: string;
-    if (text_in != null && text_in !== "") // if we have text, just use it
+    if (urlOrText.match(/\s+/g) != null) // there are spaces, so treat as text not URL
     {
-      console.log("Using raw text");
-      text = text_in;
+      text = urlOrText; // just use the text
     }
-    else if (url.endsWith("pdf")) // PDF
+    else if (urlOrText.endsWith("pdf")) // PDF
     {
-      console.log("using pdf");
-      const response = await crawler(url);
+      const response = await crawler(urlOrText);
       text = response.text;
     }
-    else if (url.match(imageExtensionsRegex) != null) // image
+    else if (urlOrText.match(imageExtensionsRegex) != null) // image
     {
-      console.log("using ocr");
-      text = await this.executeOCR(url, true);
+      text = await this.executeOCR(urlOrText, true);
     }
     else // webpage, do scraping
     {
-      console.log("using web scraping");
-      text = await this.executeScraping(url);
+      text = await this.executeScraping(urlOrText);
     }
 
     if (text === undefined || text === "")
@@ -284,9 +291,6 @@ export abstract class Scraper
       console.log("Failed to parse text.");
       return null;
     }
-
-    console.log("========================\nTEXT: ")
-    console.log(text);
 
     if (format == null)
     {
@@ -296,13 +300,17 @@ export abstract class Scraper
 
     text = this.cleanText(text);
 
-    const dates: Date[] = this.guessDatesFromString(text, format);
+    const dates: Set<string> | null = this.guessDatesFromString(text, format);
+    if (dates == null)
+    {
+      return null;
+    }
 
     const tracknames: string[] = [];
     const convertedDates: string[] = [];
-    dates.forEach((d: Date) => {
+    dates.forEach((d: string) => {
       // change from Date object to date string for DB
-      convertedDates.push(DateHelper.convertDateObjToDatabaseDateString(d));
+      convertedDates.push(d);
 
       // add an element to the trackname array for each date, so they're the same length
       tracknames.push(trackName);
@@ -373,22 +381,22 @@ export abstract class Scraper
     return text;
   }
 
-  public static guessDatesFromString(fullText: string, format: OcrFormat): Date[]
+  public static guessDatesFromString(fullText: string, format: OcrFormat): Set<string> | null
   {
-    const possibleDates: Date[] = [];
+    const possibleDates: Set<string> = new Set();
     const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
     if (groups === undefined || groups == null)
     {
       console.error("Cannot guess any dates");
-      return [];
+      return null;
     }
 
     groups.forEach((group) => {
-      const dates: Date[] | null = format.makeDate(group);
+      const dates: Set<string> | null = format.makeDate(group);
       if (dates != null)
       {
-        dates.forEach((date: Date) => {
-          possibleDates.push(date);
+        dates.forEach((date: string) => {
+          possibleDates.add(date);
         })
       }
     });
@@ -396,6 +404,8 @@ export abstract class Scraper
     // console.log("Possible dates: ");
     // console.log(possibleDates)
     return possibleDates;
+
+    // return possibleDates;
   }
 
   public static async executeScraping(url: string): Promise<string>

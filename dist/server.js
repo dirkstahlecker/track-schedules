@@ -87,13 +87,10 @@ app.get("/api/events/:date", (req, res) => __awaiter(void 0, void 0, void 0, fun
 app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/parseDocument`);
     const url = req.body.url;
-    const text = req.body.text;
     const trackname = req.body.trackname;
-    console.log(`url: ${url}, text: ${text}, trackname: ${trackname}`);
-    // TODO: consolidate url and text or figure out which to use or something
-    if ((url == null || url === "") && (text == null || text === "")) {
-        console.error("no url/text input");
-        ;
+    console.log(`url: ${url}, trackname: ${trackname}`);
+    if (url == null || url === "") {
+        console.error("date is null");
         return;
     }
     if (trackname == null || trackname === "") {
@@ -101,7 +98,7 @@ app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, vo
         return;
     }
     // TODO: allow manually specifying format?
-    const result = yield scraper_1.Scraper.readTextFromSource(url, text, trackname); // guess format
+    const result = yield scraper_1.Scraper.readTextFromSource(url, trackname); // guess format
     console.log(`result returning from API:`);
     console.log(result);
     res.set('Content-Type', 'application/json');
