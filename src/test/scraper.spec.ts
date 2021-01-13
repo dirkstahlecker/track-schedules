@@ -32,6 +32,5 @@ it("guessDatesFromString duplicates", async() => {
   expect(result.has("2021-04-17")).toBeTruthy();
   expect(result.has("2021-07-17")).toBeTruthy();
   expect(result.has("2021-07-18")).toBeTruthy();
-  
 });
 

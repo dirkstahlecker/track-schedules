@@ -156,4 +156,17 @@ export class Database
       WHERE eventdate='${date}' AND LOWER(trackname)=LOWER('${this.cleanseTracknameForDB(trackname)}');`;
     return Database.makeQuery(deleteQuery);
   }
+
+  public static async getUniqueTracks(): Promise<string[]>
+  {
+    const query: string = `SELECT DISTINCT trackname FROM dateandtrack;`;
+    const result = await Database.makeQuery(query);
+
+    const strings: string[] = [];
+    result.rows.forEach((row: any) => {
+      strings.push(row.trackname)
+    })
+
+    return strings;
+  }
 }

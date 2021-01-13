@@ -11,7 +11,7 @@ const crawler = require('crawler-request');
 // Regex should return groups that are the full date
 const regexOptions = {
   // seekonkRegex: /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi,
-  monthDelimiterDayRegex: /(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?)/gmi,
+  monthDelimiterDayRegex: /((?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?))(?:[^\d])/gmi,
   dayDelimiterMonthRegex: /((?:\d{1,2})\s*[-|]?\s*(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec))/gmi,
   monthDayYearRegex: /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi
 

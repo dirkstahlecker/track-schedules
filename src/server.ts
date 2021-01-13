@@ -131,6 +131,16 @@ app.post("/api/events/parseDocument", async(req, res) => {
 	res.json(result);
 });
 
+// return unique tracks that are in the database
+app.get("/api/tracks/distinct", async(req, res) => {
+  console.log(`/api/tracks/distinct`);
+
+  const result: string[] = await Database.getUniqueTracks();
+
+  res.set('Content-Type', 'application/json');
+	res.json(result);
+})
+
 app.get("/api/", (req, res) => {
   console.log("/test")
   res.json({message: "Hello World"});
@@ -168,4 +178,8 @@ if (process.env.NODE_ENV !== 'test') {
 
 // TODO: endpoint for getting all the tracks that have been added
 // Better to just copy the entire page and paste that in instead of scraping html
-// Duplicates for some reason - see NHMS
+
+// have a minimum number of dates in order for a regex format to be chosen - maybe 5 or 6
+
+
+// TODO: check regex recently changed

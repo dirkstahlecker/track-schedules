@@ -13,6 +13,7 @@ export class AppMachine
   @observable returnedRowsFromParseDocument: any = null;
 
   @observable eventsForDate: any = null;
+  @observable uniqueTracks: string[] | null = null;
 
   constructor()
   {
@@ -61,6 +62,13 @@ export class AppMachine
       "/api/events/parseDocument", 
       {url: this.parseDocUrl, trackname: this.parseDocTrackName});
   }
+
+  public async refreshUniqueTracks(): Promise<void>
+  {
+    const resultRaw = await fetch(`/api/tracks/distinct`);
+    const result = await resultRaw.json();
+    this.uniqueTracks = result;
+  }
 }
 
 export interface AppProps
@@ -98,6 +106,11 @@ class App extends React.Component<AppProps>
       rows = result.rows;
     }
     runInAction(() => this.machine.eventsForDate = rows);
+  }
+
+  private async refreshUniqueTracks(): Promise<void>
+  {
+    this.machine.refreshUniqueTracks();
   }
 
   private onParseDocumentUrlChange = (event: React.FormEvent<HTMLInputElement>): void => {
@@ -159,6 +172,7 @@ class App extends React.Component<AppProps>
       The value returned from the server is:
       {this.machine.testData}
       <br/>
+
       <hr/>
       <label htmlFor="parseDocumentInput">Parse Document (URL or text):</label>
       <input type="text" name="parseDocumentInput" onChange={this.onParseDocumentUrlChange}/>
@@ -175,6 +189,7 @@ class App extends React.Component<AppProps>
           {this.renderDbRows(this.machine.returnedRowsFromParseDocument)}
         </>
       }
+
       <hr/>
       Get events for date:<br/>
       <label htmlFor="getEventsForDateInput">Date: </label>
@@ -191,6 +206,19 @@ class App extends React.Component<AppProps>
       {
         this.machine.eventsForDate != null &&
         this.renderTracksList(this.machine.eventsForDate)
+      }
+
+      <hr/>
+      Unique Tracks: <button onClick={() => this.refreshUniqueTracks()}>Refresh</button>
+      {
+        this.machine.uniqueTracks != null &&
+        <>
+          {
+            this.machine.uniqueTracks.map((track: string) => {
+              return <div>{track}</div>;
+            })
+          }
+        </>
       }
     </div>
   }
