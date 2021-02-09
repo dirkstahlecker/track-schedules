@@ -8,12 +8,12 @@ export class AppMachine
 {
   @observable testData: any = null;
   @observable parseDocUrl: string | null = null;
-  @observable parseDocText: string | null = null;
   @observable parseDocTrackName: string | null = null;
   @observable eventDate: string | null = null;
   @observable returnedRowsFromParseDocument: any = null;
 
   @observable eventsForDate: any = null;
+  @observable uniqueTracks: string[] | null = null;
 
   constructor()
   {
@@ -53,15 +53,22 @@ export class AppMachine
 
   public async getEventForDate(date: string): Promise<any>
   {
-    return this.getRequest(`/api/events/${date}`)
+    const d = new Date(date);
+    return this.getRequest(`/api/events/${d}`)
   }
 
   public async parseDocument(): Promise<DbRow[] | null>
   {
-    //TODO: consolidate url and text or figure out which to use or something
     return this.postRequest(
       "/api/events/parseDocument", 
-      {url: this.parseDocUrl, text: this.parseDocText, trackname: this.parseDocTrackName});
+      {url: this.parseDocUrl, trackname: this.parseDocTrackName});
+  }
+
+  public async refreshUniqueTracks(): Promise<void>
+  {
+    const resultRaw = await fetch(`/api/tracks/distinct`);
+    const result = await resultRaw.json();
+    this.uniqueTracks = result;
   }
 }
 
@@ -91,7 +98,7 @@ class App extends React.Component<AppProps>
   {
     const result = await this.machine.getEventForDate(this.machine.eventDate!!);
     let rows: any[];
-    if (result.rows.length == 0)
+    if (result.rows.length === 0)
     {
       rows = [];
     }
@@ -102,13 +109,14 @@ class App extends React.Component<AppProps>
     runInAction(() => this.machine.eventsForDate = rows);
   }
 
+  private async refreshUniqueTracks(): Promise<void>
+  {
+    this.machine.refreshUniqueTracks();
+  }
+
   private onParseDocumentUrlChange = (event: React.FormEvent<HTMLInputElement>): void => {
     runInAction(() => this.machine.parseDocUrl = event.currentTarget.value);
   };
-
-  private onParseDocumentTextChange = (event: React.FormEvent<HTMLInputElement>): void => {
-    runInAction(() => this.machine.parseDocText = event.currentTarget.value);
-  }
 
   private onParseDocumentTrackNameChange = (event: React.FormEvent<HTMLInputElement>): void => {
     runInAction(() => this.machine.parseDocTrackName = event.currentTarget.value);
@@ -153,7 +161,7 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: any) => {
-          return <span>{row.trackname}</span>;
+          return <div>{row.trackname}</div>;
         })
       }
     </div>
@@ -165,13 +173,10 @@ class App extends React.Component<AppProps>
       The value returned from the server is:
       {this.machine.testData}
       <br/>
+
       <hr/>
-      <br/>
-      Parse Document (URL or text):
-      <label htmlFor="parseDocumentInput">URL:</label>
+      <label htmlFor="parseDocumentInput">Parse Document (URL or text):</label>
       <input type="text" name="parseDocumentInput" onChange={this.onParseDocumentUrlChange}/>
-      <label htmlFor="parseDocumentTextInput">Text:</label>
-      <input type="text" name="parseDocumentTextInput" onChange={this.onParseDocumentTextChange}/>
       <br/>
       <label htmlFor="parseDocumentTrackName">Track Name:</label>
       <input type="text" name="parseDocumentTrackName" onChange={this.onParseDocumentTrackNameChange}/>
@@ -185,6 +190,7 @@ class App extends React.Component<AppProps>
           {this.renderDbRows(this.machine.returnedRowsFromParseDocument)}
         </>
       }
+
       <hr/>
       Get events for date:<br/>
       <label htmlFor="getEventsForDateInput">Date: </label>
@@ -201,6 +207,19 @@ class App extends React.Component<AppProps>
       {
         this.machine.eventsForDate != null &&
         this.renderTracksList(this.machine.eventsForDate)
+      }
+
+      <hr/>
+      Unique Tracks: <button onClick={() => this.refreshUniqueTracks()}>Refresh</button>
+      {
+        this.machine.uniqueTracks != null &&
+        <>
+          {
+            this.machine.uniqueTracks.map((track: string) => {
+              return <div>{track}</div>;
+            })
+          }
+        </>
       }
     </div>
   }

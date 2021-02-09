@@ -93,11 +93,12 @@ app.post("/api/events/add", async(req, res) => {
 	res.json(result);
 });
 
+// send in a string that can be converted to a date here
+// then the server will put it in the right format
 app.get("/api/events/:date", async(req, res) => {
   console.log(`/api/events/${req.params.date}`);
 
   const result = await Database.getEventsForDate(req.params.date);
-  console.log(result);
 
   res.set('Content-Type', 'application/json');
 	res.json(result);
@@ -106,15 +107,13 @@ app.get("/api/events/:date", async(req, res) => {
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
   const url: string = req.body.url;
-  const text: string = req.body.text;
   const trackname: string = req.body.trackname;
 
-  console.log(`url: ${url}, text: ${text}, trackname: ${trackname}`)
+  console.log(`url: ${url}, trackname: ${trackname}`)
 
-  // TODO: consolidate url and text or figure out which to use or something
-  if ((url == null || url === "") && (text == null || text === ""))
+  if (url == null || url === "")
   {
-    console.error("no url/text input");;
+    console.error("date is null");
     return;
   }
   if (trackname == null || trackname === "")
@@ -125,13 +124,23 @@ app.post("/api/events/parseDocument", async(req, res) => {
 
   // TODO: allow manually specifying format?
 
-  const result = await Scraper.readTextFromSource(url, text, trackname); // guess format
+  const result = await Scraper.readTextFromSource(url, trackname); // guess format
   console.log(`result returning from API:`);
   console.log(result)
 
 	res.set('Content-Type', 'application/json');
 	res.json(result);
 });
+
+// return unique tracks that are in the database
+app.get("/api/tracks/distinct", async(req, res) => {
+  console.log(`/api/tracks/distinct`);
+
+  const result: string[] = await Database.getUniqueTracks();
+
+  res.set('Content-Type', 'application/json');
+	res.json(result);
+})
 
 app.get("/api/", (req, res) => {
   console.log("/test")
@@ -170,4 +179,12 @@ if (process.env.NODE_ENV !== 'test') {
 
 // TODO: endpoint for getting all the tracks that have been added
 // Better to just copy the entire page and paste that in instead of scraping html
-// Duplicates for some reason - see NHMS
+
+// have a minimum number of dates in order for a regex format to be chosen - maybe 5 or 6
+
+//TODO: UI - allow for specifying the parsing type and the date format
+//preview results before committing to database
+
+
+
+// TODO: check regex recently changed

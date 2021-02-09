@@ -1,5 +1,6 @@
 import { values } from 'mobx';
 import { Pool, QueryResult } from 'pg'
+import { DateHelper } from './scraper';
 //tslint:disable
 const pg = require('pg');
 // tslint:enable
@@ -91,7 +92,6 @@ export class Database
     {
       throw new Error(`DB Invariant: more than one row for ${date} and ${trackName}`);
     }
-    console.log(`RETURNING: ${result.rows}`)
     return Promise.resolve(result.rows[0]);
   }
 
@@ -103,6 +103,14 @@ export class Database
     {
       throw new Error("Cannot add events - dates and tracknames aren't equal length");
     }
+
+    if (dates_in.length === 0)
+    {
+      console.error("Nothing added - dates_in is empty.");
+      return null;
+    }
+
+    console.log(trackNames_in)
 
     const dates: string[] = [];
     const tracknames: string[] = [];
@@ -147,7 +155,10 @@ export class Database
 
   public static async getEventsForDate(date: string): Promise<any>
   {
-    const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${date}';`;
+    // format the date
+    const formattedDate: string = DateHelper.convertDateObjToDatabaseDateString(new Date(date));
+
+    const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${formattedDate}';`;
     return Database.makeQuery(query);
   }
 
@@ -156,5 +167,18 @@ export class Database
     const deleteQuery: string = `DELETE FROM dateandtrack
       WHERE eventdate='${date}' AND LOWER(trackname)=LOWER('${this.cleanseTracknameForDB(trackname)}');`;
     return Database.makeQuery(deleteQuery);
+  }
+
+  public static async getUniqueTracks(): Promise<string[]>
+  {
+    const query: string = `SELECT DISTINCT trackname FROM dateandtrack;`;
+    const result = await Database.makeQuery(query);
+
+    const strings: string[] = [];
+    result.rows.forEach((row: any) => {
+      strings.push(row.trackname)
+    })
+
+    return strings;
   }
 }

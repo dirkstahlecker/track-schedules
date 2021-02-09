@@ -77,23 +77,21 @@ app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, func
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
+// send in a string that can be converted to a date here
+// then the server will put it in the right format
 app.get("/api/events/:date", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/${req.params.date}`);
     const result = yield database_1.Database.getEventsForDate(req.params.date);
-    console.log(result);
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
 app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/parseDocument`);
     const url = req.body.url;
-    const text = req.body.text;
     const trackname = req.body.trackname;
-    console.log(`url: ${url}, text: ${text}, trackname: ${trackname}`);
-    // TODO: consolidate url and text or figure out which to use or something
-    if ((url == null || url === "") && (text == null || text === "")) {
-        console.error("no url/text input");
-        ;
+    console.log(`url: ${url}, trackname: ${trackname}`);
+    if (url == null || url === "") {
+        console.error("date is null");
         return;
     }
     if (trackname == null || trackname === "") {
@@ -101,9 +99,16 @@ app.post("/api/events/parseDocument", (req, res) => __awaiter(void 0, void 0, vo
         return;
     }
     // TODO: allow manually specifying format?
-    const result = yield scraper_1.Scraper.readTextFromSource(url, text, trackname); // guess format
+    const result = yield scraper_1.Scraper.readTextFromSource(url, trackname); // guess format
     console.log(`result returning from API:`);
     console.log(result);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
+}));
+// return unique tracks that are in the database
+app.get("/api/tracks/distinct", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`/api/tracks/distinct`);
+    const result = yield database_1.Database.getUniqueTracks();
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
@@ -134,5 +139,6 @@ if (process.env.NODE_ENV !== 'test') {
 //  have to worry about object equality in the set)
 // TODO: endpoint for getting all the tracks that have been added
 // Better to just copy the entire page and paste that in instead of scraping html
-// Duplicates for some reason - see NHMS
+// have a minimum number of dates in order for a regex format to be chosen - maybe 5 or 6
+// TODO: check regex recently changed
 //# sourceMappingURL=server.js.map
