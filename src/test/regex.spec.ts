@@ -26,7 +26,7 @@ describe("monthDelimiterDay", () => {
   });
 
   // TODO: need to implement this
-  it("monthDelimiterDay advanced parsing single", () => {
+  it("monthDelimiterDay advanced parsing single", () => { //TODO: broken because regex stops at the dash (use https://www.regextester.com/)
     const testString: string = `OCT. 8-10`;
     const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.size).toEqual(3);
@@ -64,11 +64,25 @@ describe("monthDelimiterDay", () => {
   });
 
 
-  it("monthDelimiterDay doesn't mistake years for days", () => {
+  it("monthDelimiterDay doesn't mistake years for days", () => { //TODO: need to fix regex for this too
     const testString: string = "JULY 2021";
     const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates).toBeNull();
   });
+
+  it("monthDelimiterDay deals with st, nd, rd, th after day", () => {
+    const testString: string = `
+    July 2nd and July 3rd – Bill Gardner Sprintacular
+    July 2nd (Friday) USAC/MSCS Sprints, Modifieds, Super Stocks, and Bombers
+    July 3rd (Saturday) USAC/MSCS Sprints, MMSA, and Midget Cup`;
+
+    const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
+    expect(dates.size).toEqual(2);
+    
+    const datesArray = Array.from(dates);
+    expect(datesArray.indexOf(`${TestUtils.currentYear}-07-02`) > -1).toBeTruthy();
+    expect(datesArray.indexOf(`${TestUtils.currentYear}-07-03`) > -1).toBeTruthy();
+  })
 });
 
 describe("format guesser", () => {

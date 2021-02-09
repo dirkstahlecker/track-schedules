@@ -168,7 +168,7 @@ app.get("*", (req, res) => {
 const port = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
-    // console.log(`server started on port ${port}`)
+    console.log(`server started on port ${port}`)
   });
 }
 
@@ -182,8 +182,8 @@ if (process.env.NODE_ENV !== 'test') {
 
 // have a minimum number of dates in order for a regex format to be chosen - maybe 5 or 6
 
-//TODO: UI - allow for specifying the parsing type and the date format
-//preview results before committing to database
+// TODO: UI - allow for specifying the parsing type and the date format
+// preview results before committing to database
 
 
 

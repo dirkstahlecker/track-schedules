@@ -94,6 +94,7 @@ export abstract class DateHelper
   // return a string in the proper format for the database: YYYY-MM-DD
   private static makeDateBase(monthIndex: number | null, day: number | null, year: number = currentYear): string | null
   {
+    console.log(`monthIndex: ${monthIndex}, day: ${day}, year: ${year}`)
     if (monthIndex == null || day == null)
     {
       console.error(`Cannot make date - invalid arguments. month: ${monthIndex}, day: ${day}, year: ${year}`);
@@ -123,8 +124,12 @@ export abstract class DateHelper
   }
 
   public static makeDateMonthDelimiterDay = (matchText: string): Set<string> | null => {
-    const pieces = matchText.split(DateHelper.delimitersRegex);
-    const monthIndex = DateHelper.stringToMonthIndex(pieces[0]);
+    const rawPieces = matchText.split(DateHelper.delimitersRegex);
+    const monthIndex = DateHelper.stringToMonthIndex(rawPieces[0]);
+
+    const pieces = rawPieces.filter((value: string) => {
+      return value !== "";
+    })
 
     // if pieces is 3, there's a dash in the day
     if (pieces.length === 3)
@@ -140,6 +145,7 @@ export abstract class DateHelper
 
       return dates;
     }
+    
     if (pieces.length !== 2)
     {
       throw new Error("incorrectly parsed match text: " + matchText);
@@ -187,7 +193,7 @@ export abstract class DateHelper
   }
 }
 
-export type OcrFormat = {regex: RegExp, makeDate: (matchText: string) => Set<string> | null};
+export type OcrFormat = {name: string, regex: RegExp, makeDate: (matchText: string) => Set<string> | null};
 
 export const Formats = {
   // seekonk: {
@@ -195,14 +201,17 @@ export const Formats = {
   //   makeDate: DateHelper.makeDateSeekonk
   // },
   monthDayYear: {
+    name: "monthDayYear",
     regex: regexOptions.monthDayYearRegex,
     makeDate: DateHelper.makeDateMonthDayYear
   },
   monthDelimiterDay: {
+    name: "monthDelimiterDay",
     regex: regexOptions.monthDelimiterDayRegex,
     makeDate: DateHelper.makeDateMonthDelimiterDay
   },
   dayDelimiterMonth: {
+    name: "dayDelimiterMonth",
     regex: regexOptions.dayDelimiterMonthRegex,
     makeDate: DateHelper.makeDateDayDelimiterMonth
   }
@@ -295,7 +304,7 @@ export abstract class Scraper
     if (format == null)
     {
       format = this.guessFormat(text);
-      console.log("opted for format " + format.regex);
+      console.log(`opted for format ${format.name} with regex: ${format.regex}`);
     }
 
     text = this.cleanText(text);
@@ -315,6 +324,7 @@ export abstract class Scraper
       // add an element to the trackname array for each date, so they're the same length
       tracknames.push(trackName);
     });
+
     return Database.addEvents(convertedDates, tracknames);
 
     // Scraper.addDatesForTrack(trackName, dates); // deprecated - use database instead
@@ -384,15 +394,18 @@ export abstract class Scraper
   public static guessDatesFromString(fullText: string, format: OcrFormat): Set<string> | null
   {
     const possibleDates: Set<string> = new Set();
-    const groups: RegExpMatchArray | undefined = fullText.match(format.regex);
+    const groups: IterableIterator<RegExpMatchArray> | undefined = fullText.matchAll(format.regex);
     if (groups === undefined || groups == null)
     {
       console.error("Cannot guess any dates");
       return null;
     }
 
-    groups.forEach((group) => {
-      const dates: Set<string> | null = format.makeDate(group);
+    // const array = [...fullText.matchAll(format.regex)];
+
+    const groupsArray = Array.from(groups);
+    groupsArray.forEach((group: RegExpMatchArray) => {
+      const dates: Set<string> | null = format.makeDate(group[0]);
       if (dates != null)
       {
         dates.forEach((date: string) => {
