@@ -53,7 +53,8 @@ export class AppMachine
 
   public async getEventForDate(date: string): Promise<any>
   {
-    return this.getRequest(`/api/events/${date}`)
+    const d = new Date(date);
+    return this.getRequest(`/api/events/${d}`)
   }
 
   public async parseDocument(): Promise<DbRow[] | null>
@@ -97,7 +98,7 @@ class App extends React.Component<AppProps>
   {
     const result = await this.machine.getEventForDate(this.machine.eventDate!!);
     let rows: any[];
-    if (result.rows.length == 0)
+    if (result.rows.length === 0)
     {
       rows = [];
     }
@@ -160,7 +161,7 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: any) => {
-          return <span>{row.trackname}</span>;
+          return <div>{row.trackname}</div>;
         })
       }
     </div>

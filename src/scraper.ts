@@ -27,7 +27,7 @@ export function TESTPIN_convertDateObjToDatabaseDateString(date: Date): string
   return DateHelper.convertDateObjToDatabaseDateString(date);
 }
 
-abstract class DateHelper
+export abstract class DateHelper
 {
   private static delimitersRegex = /(?:\||-|\/|\s|\.)+/gmi;
 

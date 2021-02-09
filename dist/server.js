@@ -77,10 +77,11 @@ app.post("/api/events/add", (req, res) => __awaiter(void 0, void 0, void 0, func
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));
+// send in a string that can be converted to a date here
+// then the server will put it in the right format
 app.get("/api/events/:date", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`/api/events/${req.params.date}`);
     const result = yield database_1.Database.getEventsForDate(req.params.date);
-    console.log(result);
     res.set('Content-Type', 'application/json');
     res.json(result);
 }));

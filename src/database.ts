@@ -1,5 +1,6 @@
 import { values } from 'mobx';
 import { Pool, QueryResult } from 'pg'
+import { DateHelper } from './scraper';
 //tslint:disable
 const pg = require('pg');
 // tslint:enable
@@ -103,6 +104,14 @@ export class Database
       throw new Error("Cannot add events - dates and tracknames aren't equal length");
     }
 
+    if (dates_in.length === 0)
+    {
+      console.error("Nothing added - dates_in is empty.");
+      return null;
+    }
+
+    console.log(trackNames_in)
+
     const dates: string[] = [];
     const tracknames: string[] = [];
 
@@ -146,7 +155,10 @@ export class Database
 
   public static async getEventsForDate(date: string): Promise<any>
   {
-    const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${date}';`;
+    // format the date
+    const formattedDate: string = DateHelper.convertDateObjToDatabaseDateString(new Date(date));
+
+    const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${formattedDate}';`;
     return Database.makeQuery(query);
   }
 

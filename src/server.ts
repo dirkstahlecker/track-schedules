@@ -93,11 +93,12 @@ app.post("/api/events/add", async(req, res) => {
 	res.json(result);
 });
 
+// send in a string that can be converted to a date here
+// then the server will put it in the right format
 app.get("/api/events/:date", async(req, res) => {
   console.log(`/api/events/${req.params.date}`);
 
   const result = await Database.getEventsForDate(req.params.date);
-  console.log(result);
 
   res.set('Content-Type', 'application/json');
 	res.json(result);
@@ -180,6 +181,10 @@ if (process.env.NODE_ENV !== 'test') {
 // Better to just copy the entire page and paste that in instead of scraping html
 
 // have a minimum number of dates in order for a regex format to be chosen - maybe 5 or 6
+
+//TODO: UI - allow for specifying the parsing type and the date format
+//preview results before committing to database
+
 
 
 // TODO: check regex recently changed
