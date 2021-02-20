@@ -110,7 +110,7 @@ export class Database
       return null;
     }
 
-    console.log(`dates_in: ${dates_in}`);
+    console.log(`dates_in to add to database: ${dates_in}`);
 
     const dates: string[] = [];
     const tracknames: string[] = [];

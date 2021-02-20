@@ -26,8 +26,8 @@ describe("monthDelimiterDay", () => {
   });
 
   it("monthDelimiterDay advanced parsing single", () => {
-    let testString: string = `OCT. 8-10`;
-    let dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
+    const testString: string = `OCT. 8-10`;
+    const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.size).toEqual(3);
     // expect(TestUtils.compareDates(dates[0], new Date(`10-8-${TestUtils.currentYear}`)));
     // expect(TestUtils.compareDates(dates[1], new Date(`10-9-${TestUtils.currentYear}`)));
@@ -72,8 +72,7 @@ describe("monthDelimiterDay", () => {
     expect(datesArray.indexOf(`${TestUtils.currentYear}-09-09`) > -1).toBeTruthy();
   });
 
-
-  it("monthDelimiterDay doesn't mistake years for days", () => { //TODO: need to fix regex for this too
+  it("monthDelimiterDay doesn't mistake years for days", () => { // TODO: need to fix regex for this too
     const testString: string = "JULY 2021";
     const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.size).toEqual(0);
@@ -87,11 +86,20 @@ describe("monthDelimiterDay", () => {
 
     const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.size).toEqual(2);
-    
+
     const datesArray = Array.from(dates);
     expect(datesArray.indexOf(`${TestUtils.currentYear}-07-02`) > -1).toBeTruthy();
     expect(datesArray.indexOf(`${TestUtils.currentYear}-07-03`) > -1).toBeTruthy();
-  })
+  });
+
+  it("invalid dates aren't returned", () => {
+    // make sure we don't add dates such as June 31st
+    const testString: string = "June 31, November 31st";
+    const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
+    expect(dates.size).toEqual(0);
+
+    // TODO: leap year (can't test yet because year is always current year)
+  });
 });
 
 describe("format guesser", () => {

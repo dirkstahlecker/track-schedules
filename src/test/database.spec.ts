@@ -30,3 +30,5 @@ describe("Events", () => {
     expect(result).toBeNull();
   });
 });
+
+// describe('Database does not crash on invalid date')

@@ -158,6 +158,10 @@ class App extends React.Component<AppProps>
     {
       return <></>;
     }
+
+    //TODO: sort rows
+    
+
     return <div>
       {
         rows.map((row: any) => {
