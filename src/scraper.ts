@@ -11,14 +11,24 @@ const crawler = require('crawler-request');
 // Regex should return groups that are the full date
 const regexOptions = {
   // seekonkRegex: /(?:JUN|JULY|AUG|SEPT|OCT|NOV|DEC|JUN|JUL|JAN|FEB|MAR|APR|MAY|JUNE)\s+(?:\d{1,2})/gmi,
-  monthDelimiterDayRegex: /((?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s+[\|]*\s*(?:\d{1,2}(?:\s*-\s*\d{1,2})?))(?:[^\d])/gmi,
+  monthDelimiterDayRegex: /((?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec\.)\s*[\|]*\s*(?:\d{1,2}[st|nd|rd|th]*(?:\s*-\s*\d{1,2}[st|nd|rd|th]*)?))(?:[^\d])/gmi,
   dayDelimiterMonthRegex: /((?:\d{1,2})\s*[-|]?\s*(?:january|jan|jan\.|february|feb|feb\.|march|mar|mar\.|april|apr|apr\.|may|jun|jun\.|june|july|jul\.|jul|august|aug|aug\.|sep|sep\.|sept|sept\.|september|october|oct|oct\.|november|nov|nov\.|december|dec|dec))/gmi,
-  monthDayYearRegex: /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi
+  monthDayYearRegex: /([\d]{1,2}[-\/][\d]{1,2}[-\/][\d]{2,4})/gmi,
+  // monthDelimiterDay2: 
 
   // no spaces - JUN17 JULY9
+  // July 2 and 3
+  // July 2 & 3
+  // July 2nd & 3rd
+
 }
 
 // (?:\s*-\s*\d{1,2})?
+
+/**
+ * If there aren't at least this many matches when guessing regex, declare failure and give up
+ */
+const MIN_MATCHES_TO_USE_FORMAT: number = 5;
 
 const currentYear: number = new Date().getFullYear();
 
@@ -94,7 +104,7 @@ export abstract class DateHelper
   // return a string in the proper format for the database: YYYY-MM-DD
   private static makeDateBase(monthIndex: number | null, day: number | null, year: number = currentYear): string | null
   {
-    console.log(`monthIndex: ${monthIndex}, day: ${day}, year: ${year}`)
+    // console.log(`monthIndex: ${monthIndex}, day: ${day}, year: ${year}`)
     if (monthIndex == null || day == null)
     {
       console.error(`Cannot make date - invalid arguments. month: ${monthIndex}, day: ${day}, year: ${year}`);
@@ -130,6 +140,7 @@ export abstract class DateHelper
     const pieces = rawPieces.filter((value: string) => {
       return value !== "";
     })
+    console.log(`pieces: ${pieces}`)
 
     // if pieces is 3, there's a dash in the day
     if (pieces.length === 3)
@@ -140,7 +151,9 @@ export abstract class DateHelper
 
       for (let i: number = day1; i <= day2; i++)
       {
-        dates.add(DateHelper.makeDateBase(monthIndex, i));
+        const d = DateHelper.makeDateBase(monthIndex, i);
+        console.log(d)
+        dates.add(d);
       }
 
       return dates;
@@ -234,16 +247,16 @@ export abstract class Scraper
 
   // take source data and figure out which format best represents it by trying all the regex and seeing
   // which gives more matches
-  private static guessFormat(sourceText: string): OcrFormat
+  private static guessFormat(sourceText: string): OcrFormat | null
   {
-    let format: OcrFormat;
-    let count: number = 0;
+    let format: OcrFormat | null = null;
+    let count: number = MIN_MATCHES_TO_USE_FORMAT; //need to have at least this many matches to count
 
     //tslint:disable
     for (const key in Formats)
     {
       // tslint:enable
-      const value = (Formats as any)[key]; // TODO: type safety
+      const value: OcrFormat = (Formats as any)[key]; // TODO: type safety
       const groups = sourceText.match(value.regex);
       if (groups != null && groups.length > count) // this has more matches, so use it
       {
@@ -252,6 +265,10 @@ export abstract class Scraper
       }
     }
 
+    if (format == null)
+    {
+      return null;
+    }
     return format;
   }
 
@@ -304,6 +321,11 @@ export abstract class Scraper
     if (format == null)
     {
       format = this.guessFormat(text);
+      if (format == null)
+      {
+        console.log("Failed to locate a suitable format.");
+        return null;
+      }
       console.log(`opted for format ${format.name} with regex: ${format.regex}`);
     }
 
@@ -393,6 +415,7 @@ export abstract class Scraper
 
   public static guessDatesFromString(fullText: string, format: OcrFormat): Set<string> | null
   {
+    fullText = fullText + "\n"; //hack around regex that requires something after the last thing to capture dates with a dash
     const possibleDates: Set<string> = new Set();
     const groups: IterableIterator<RegExpMatchArray> | undefined = fullText.matchAll(format.regex);
     if (groups === undefined || groups == null)
@@ -400,8 +423,6 @@ export abstract class Scraper
       console.error("Cannot guess any dates");
       return null;
     }
-
-    // const array = [...fullText.matchAll(format.regex)];
 
     const groupsArray = Array.from(groups);
     groupsArray.forEach((group: RegExpMatchArray) => {

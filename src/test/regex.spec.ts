@@ -25,14 +25,23 @@ describe("monthDelimiterDay", () => {
     // expect(TestUtils.compareDates(dates[7], new Date("6-5-21"))).toBeTruthy();
   });
 
-  // TODO: need to implement this
-  it("monthDelimiterDay advanced parsing single", () => { //TODO: broken because regex stops at the dash (use https://www.regextester.com/)
-    const testString: string = `OCT. 8-10`;
-    const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
+  it("monthDelimiterDay advanced parsing single", () => {
+    let testString: string = `OCT. 8-10`;
+    let dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
     expect(dates.size).toEqual(3);
     // expect(TestUtils.compareDates(dates[0], new Date(`10-8-${TestUtils.currentYear}`)));
     // expect(TestUtils.compareDates(dates[1], new Date(`10-9-${TestUtils.currentYear}`)));
     // expect(TestUtils.compareDates(dates[2], new Date(`10-10-${TestUtils.currentYear}`)));
+  });
+
+  it("monthDelimiterDay advanced parsing single with th", () => {
+    let testString = `OCT. 8th - 10th`;
+    let dates = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
+    expect(dates.size).toEqual(3);
+
+    testString = `october 8th-10th`;
+    dates = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
+    expect(dates.size).toEqual(3);
   });
 
   it("monthDelimiterDay advanced parsing single", () => {
@@ -67,7 +76,7 @@ describe("monthDelimiterDay", () => {
   it("monthDelimiterDay doesn't mistake years for days", () => { //TODO: need to fix regex for this too
     const testString: string = "JULY 2021";
     const dates: Set<string> | null = Scraper.guessDatesFromString(testString, Formats.monthDelimiterDay);
-    expect(dates).toBeNull();
+    expect(dates.size).toEqual(0);
   });
 
   it("monthDelimiterDay deals with st, nd, rd, th after day", () => {
