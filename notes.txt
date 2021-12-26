@@ -9,3 +9,5 @@ Database:
 start database on command line: psql postgres
 create database: CREATE DATABASE [name];
 connect to database: \c [name]
+
+npm start in both client and server

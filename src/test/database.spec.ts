@@ -4,9 +4,10 @@ import { TestUtils } from "./testUtils";
 describe("Events", () => {
   const dates: string[] = ["2000-01-11", "2000-02-02"];
   const tracknames: string[] = ["Seekonk Speedway", "Lincoln Speedway"];
+  const states: string[] = ["MA", "PA"];
   it("insert", async() => {
     // insert dummy values
-    await Database.addEvents(dates, tracknames);
+    await Database.addEvents(dates, tracknames, states);
   });
   it("verify", async() => {
     // verify the inserted values exist
@@ -17,6 +18,7 @@ describe("Events", () => {
     result = await Database.getEventForTrackAndDate(dates[1], tracknames[1]);
     // expect(TestUtils.compareDates(result.eventdate, new Date(dates[1]))).toBeTruthy();
     expect(result.trackname).toEqual(tracknames[1]);
+    expect(result.state).toEqual(states[1]);
   });
   it("delete", async() => {
     // clean up by removing the values

@@ -52,7 +52,7 @@ async function testing(): Promise<void>
   // readTextFromSource(bapsUrl, "BAPS Motor Speedway", Formats.normal);
   // readTextFromSource(portRoyalUrl, "Port Royal Speedway", Formats.monthDelimiterDay);
 
-  Database.addEvents(["2021-01-08"], ["Seekonk Speedway"]);
+  // Database.addEvents(["2021-01-08"], ["Seekonk Speedway"]);
 
   // const result = await Database.getEventForTrackAndDate("2021-01-08", "Seekonk Speedway");
   // console.log(result);
@@ -74,7 +74,8 @@ app.post("/api/events/add", async(req, res) => {
   console.log(`/api/events/add`);
   const date = req.params.date;
   const trackname = req.params.trackname;
-  console.log(`date: ${date}, trackname: ${trackname}`)
+  const state = req.params.state;
+  console.log(`date: ${date}, trackname: ${trackname}, state: ${state}`)
 
   if (date == null || date === "")
   {
@@ -87,7 +88,7 @@ app.post("/api/events/add", async(req, res) => {
     return;
   }
 
-  const result = await Database.addEvents([date], [trackname]);
+  const result = await Database.addEvents([date], [trackname], [state]);
 
 	res.set('Content-Type', 'application/json');
 	res.json(result);
@@ -104,12 +105,22 @@ app.get("/api/events/:date", async(req, res) => {
 	res.json(result);
 });
 
+app.get("/api/events/state/:state", async(req, res) => {
+  console.log(`/api/events/state/${req.params.state}`);
+
+  const result = await Database.getEventsForState(req.params.state);
+
+  res.set('Content-Type', 'application/json');
+	res.json(result);
+});
+
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);
   const url: string = req.body.url;
   const trackname: string = req.body.trackname;
+  const state: string = req.body.state
 
-  console.log(`url: ${url}, trackname: ${trackname}`)
+  console.log(`url: ${url}, trackname: ${trackname}, state: ${state}`)
 
   if (url == null || url === "")
   {
@@ -121,10 +132,15 @@ app.post("/api/events/parseDocument", async(req, res) => {
     console.error("trackname is null");
     return;
   }
+  if (state == null || state === "")
+  {
+    console.error("state is null");
+    return;
+  }
 
   // TODO: allow manually specifying format?
 
-  const result = await Scraper.readTextFromSource(url, trackname); // guess format
+  const result = await Scraper.readTextFromSource(url, trackname, state); // guess format
   console.log(`result returning from API:`);
   console.log(result)
 
@@ -136,7 +152,7 @@ app.post("/api/events/parseDocument", async(req, res) => {
 app.get("/api/tracks/distinct", async(req, res) => {
   console.log(`/api/tracks/distinct`);
 
-  const result: string[] = await Database.getUniqueTracks();
+  const result: {trackname: string, state: string}[] = await Database.getUniqueTracks();
 
   res.set('Content-Type', 'application/json');
 	res.json(result);
@@ -188,3 +204,5 @@ if (process.env.NODE_ENV !== 'test') {
 
 
 // TODO: check regex recently changed
+
+// TODO: how to deal with non-events in schedule? (rain dates, swap meets, etc)

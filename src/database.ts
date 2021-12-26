@@ -37,7 +37,8 @@ else
 export type DbRow = {
   id: number,
   eventdate: Date,
-  trackname: string
+  trackname: string,
+  state: string
 };
 
 // export const makeDbRow = (json: any): DbRow => {
@@ -96,7 +97,7 @@ export class Database
   }
 
   // returns added rows
-  public static async addEvents(dates_in: string[], trackNames_in: string[]): Promise<DbRow[] | null>
+  public static async addEvents(dates_in: string[], trackNames_in: string[], states_in: string[]): Promise<DbRow[] | null>
   {
     // TODO: verify date string format
     if (dates_in.length !== trackNames_in.length)
@@ -144,10 +145,10 @@ export class Database
     let valuesStr: string = "";
     for (let ii: number = 0; ii < dates.length; ii++)
     {
-      valuesStr += ` ('${dates[ii]}', '${tracknames[ii]}')${ii < dates.length - 1 ? "," : ""}`;
+      valuesStr += ` ('${dates[ii]}', '${tracknames[ii]}', '${states_in[ii]}')${ii < dates.length - 1 ? "," : ""}`;
     }
 
-    const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName) VALUES
+    const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName, state) VALUES
       ${valuesStr} RETURNING *;`;
     const result = await this.makeQuery(insertQuery);
     return result.rows;
@@ -162,6 +163,12 @@ export class Database
     return Database.makeQuery(query);
   }
 
+  public static async getEventsForState(state: string): Promise<any>
+  {
+    const query: string = `SELECT * FROM dateandtrack WHERE state='${state}';`;
+    return Database.makeQuery(query);
+  }
+
   public static async deleteEvent(date: string, trackname: string): Promise<void>
   {
     const deleteQuery: string = `DELETE FROM dateandtrack
@@ -169,14 +176,14 @@ export class Database
     return Database.makeQuery(deleteQuery);
   }
 
-  public static async getUniqueTracks(): Promise<string[]>
+  public static async getUniqueTracks(): Promise<{trackname: string, state: string}[]>
   {
-    const query: string = `SELECT DISTINCT trackname FROM dateandtrack;`;
+    const query: string = `SELECT DISTINCT trackname, state FROM dateandtrack;`;
     const result = await Database.makeQuery(query);
 
-    const strings: string[] = [];
+    const strings: {trackname: string, state: string}[] = [];
     result.rows.forEach((row: any) => {
-      strings.push(row.trackname)
+      strings.push({trackname: row.trackname, state: row.state})
     })
 
     return strings;

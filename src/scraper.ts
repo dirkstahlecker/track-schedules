@@ -31,7 +31,8 @@ const regexOptions = {
  */
 const MIN_MATCHES_TO_USE_FORMAT: number = 5;
 
-const currentYear: number = new Date().getFullYear();
+// TODO: make this changeable or something
+const currentYear: number = 2022; // new Date().getFullYear();
 
 export function TESTPIN_convertDateObjToDatabaseDateString(date: Date): string
 {
@@ -335,7 +336,7 @@ export abstract class Scraper
   }
 
   // URL entry point
-  public static async readTextFromSource(urlOrText: string, trackName: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
+  public static async readTextFromSource(urlOrText: string, trackName: string, state: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
   {
     if (urlOrText == null || urlOrText === undefined || urlOrText === "")
     {
@@ -392,15 +393,17 @@ export abstract class Scraper
 
     const tracknames: string[] = [];
     const convertedDates: string[] = [];
+    const states: string[] = [];
     dates.forEach((d: string) => {
       // change from Date object to date string for DB
       convertedDates.push(d);
 
       // add an element to the trackname array for each date, so they're the same length
       tracknames.push(trackName);
+      states.push(state);
     });
 
-    return Database.addEvents(convertedDates, tracknames);
+    return Database.addEvents(convertedDates, tracknames, states);
 
     // Scraper.addDatesForTrack(trackName, dates); // deprecated - use database instead
   }

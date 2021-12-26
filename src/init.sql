@@ -11,7 +11,8 @@ CREATE TABLE dateandtrack
 (
   id SERIAL PRIMARY KEY,
   eventDate DATE NOT NULL,
-  trackName text NOT NULL
+  trackName text NOT NULL,
+  state CHAR(2)
 );
 
 
