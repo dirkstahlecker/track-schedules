@@ -3,7 +3,7 @@ import rp from 'request-promise';
 import cheerio from 'cheerio';
 import { grandRapidsTestString, seekonkTestString, staffordTestString, waterfordTestString } from './ocrTestString';
 import { grandRapidsUrl, seekonkUrl, staffordUrl, waterfordUrl } from './server';
-import { Database, DbRow } from './database';
+import { Database, DbError, DbRow, DbRowResponse } from './database';
 //tslint:disable
 const crawler = require('crawler-request');
 // tslint:enable
@@ -336,12 +336,11 @@ export abstract class Scraper
   }
 
   // URL entry point
-  public static async readTextFromSource(urlOrText: string, trackName: string, state: string, format: OcrFormat | null = null): Promise<DbRow[] | null>
+  public static async readTextFromSource(urlOrText: string, trackName: string, state: string, format: OcrFormat | null = null): Promise<DbRowResponse | null>
   {
     if (urlOrText == null || urlOrText === undefined || urlOrText === "")
     {
-      console.error("Cannot read text from source - source text is blank or null");
-      return;
+      return DbRowResponse.withError("Cannot read text from source - source text is blank or null");
     }
 
     const imageExtensionsRegex = /(?:\.png)|(?:\.jpg)/gmi; // TODO: support more extensions
@@ -368,8 +367,7 @@ export abstract class Scraper
 
     if (text === undefined || text === "")
     {
-      console.log("Failed to parse text.");
-      return null;
+      return DbRowResponse.withError("Failed to parse text.");
     }
 
     if (format == null)
@@ -377,8 +375,7 @@ export abstract class Scraper
       format = this.guessFormat(text);
       if (format == null)
       {
-        console.log("Failed to locate a suitable format.");
-        return null;
+        return DbRowResponse.withError("Failed to locate a suitable format.");
       }
       console.log(`opted for format ${format.name} with regex: ${format.regex}`);
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import {observer} from "mobx-react";
 import {makeObservable, observable, runInAction, action} from "mobx";
-import { DbRow } from './Types';
+import { DbError, DbRow, DbRowResponse } from './Types';
 
 export class AppMachine
 {
@@ -11,7 +11,7 @@ export class AppMachine
   @observable parseDocTrackName: string | null = null;
   @observable eventDate: string | null = null;
   @observable eventState: string | null = null;
-  @observable returnedRowsFromParseDocument: any = null;
+  @observable returnedRowsFromParseDocument: DbRowResponse | null = null;
   @observable state: string = "MA";
 
   @observable eventsForDate: any = null;
@@ -64,7 +64,7 @@ export class AppMachine
     return this.getRequest(`/api/events/state/${state}`)
   }
 
-  public async parseDocument(): Promise<DbRow[] | null>
+  public async parseDocument(): Promise<DbRowResponse | null>
   {
     return this.postRequest(
       "/api/events/parseDocument", 
@@ -74,8 +74,44 @@ export class AppMachine
   public async refreshUniqueTracks(): Promise<void>
   {
     const resultRaw = await fetch(`/api/tracks/distinct`);
-    const result = await resultRaw.json();
-    this.uniqueTracks = result;
+    const result: {trackname: string, state: string}[] | null = await resultRaw.json();
+
+    if (result !== null)
+    {
+      result.sort((first: {trackname: string, state: string}, second: {trackname: string, state: string}) => {
+        const name1 = first.trackname[0];
+        const name2 = second.trackname[0];
+        const state1 = first.state;
+        const state2 = second.state;
+
+        //if first > second, return 1
+        //if first < second, return -1
+        //if first == second, return 0
+
+        if (state1 < state2)
+        {
+          return -1;
+        }
+        else if (state1 > state2)
+        {
+          return 1;
+        }
+        else //same state
+        {
+          if (name1 < name2)
+          {
+            return -1;
+          }
+          else if (name1 > name2)
+          {
+            return 1;
+          }
+          return 0;
+        }
+      });
+    }
+    
+    runInAction(() => this.uniqueTracks = result);
   }
 }
 
@@ -97,7 +133,7 @@ class App extends React.Component<AppProps>
 
   private async submitUrl(): Promise<void>
   {
-    const result: DbRow[] | null = await this.machine.parseDocument();
+    const result: DbRowResponse | null = await this.machine.parseDocument();
     runInAction(() => this.machine.returnedRowsFromParseDocument = result);
   }
 
@@ -226,13 +262,13 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: DbRow) => {
-          return <>
+          return <React.Fragment key="row">
             <div>
               {row.trackname}:&nbsp;
               {row.eventdate}
             </div>
             <br/>
-          </>;
+          </React.Fragment>;
         })
       }
     </div>
@@ -288,11 +324,19 @@ class App extends React.Component<AppProps>
       }}>Clear</button>
       <br/>
       {
-        this.machine.returnedRowsFromParseDocument != null && 
+        this.machine.returnedRowsFromParseDocument?.error != null &&
         <>
-          Inserted {this.machine.returnedRowsFromParseDocument.length} rows.
+          Failed to add rows.
           <br/>
-          {this.renderDbRows(this.machine.returnedRowsFromParseDocument)}
+          Message: {this.machine.returnedRowsFromParseDocument.error.message}
+        </>
+      }
+      {
+        this.machine.returnedRowsFromParseDocument?.rows && 
+        <>
+          Inserted {this.machine.returnedRowsFromParseDocument.rows.length} rows.
+          <br/>
+          {this.renderDbRows(this.machine.returnedRowsFromParseDocument.rows)}
         </>
       }
     </>
@@ -306,6 +350,13 @@ class App extends React.Component<AppProps>
       <input type="text" name="getEventsForDateInput" onChange={this.onGetEventForDateDateChange}/>
       <button onClick={() => this.submitGetEventsForDate()}>Submit</button>
       <br/>
+      Get events for State:<br/>
+      <label htmlFor="getEventsForStateInput">State: </label>
+      <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/>
+      <button onClick={() => this.submitGetEventsForState()}>Submit</button>
+      <br/>
+
+      <br/>
       {
         this.machine.eventDate != null &&
           <>
@@ -317,11 +368,6 @@ class App extends React.Component<AppProps>
         this.machine.eventsForDate != null &&
         this.renderTracksList(this.machine.eventsForDate)
       }
-
-      Get events for State:<br/>
-      <label htmlFor="getEventsForStateInput">State: </label>
-      <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/>
-      <button onClick={() => this.submitGetEventsForState()}>Submit</button>
     </>
   } //TODO: state isn't working yet
 
@@ -360,3 +406,5 @@ class App extends React.Component<AppProps>
 }
 
 export default App;
+
+//TODO: indicate in UI when no dates were added because they already exist

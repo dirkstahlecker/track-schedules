@@ -41,6 +41,22 @@ export type DbRow = {
   state: string
 };
 
+export class DbRowResponse
+{
+  constructor(public rows: DbRow[], public error: DbError | null)
+  {}
+
+  public static withError(errorMessage: string): DbRowResponse
+  {
+    return new DbRowResponse([], new DbError(errorMessage));
+  }
+
+  public static withRows(rows: DbRow[]): DbRowResponse
+  {
+    return new DbRowResponse(rows, null);
+  }
+}
+
 // export const makeDbRow = (json: any): DbRow => {
 
 //   return {
@@ -49,6 +65,14 @@ export type DbRow = {
 //     trackname: json.trackname
 //   }
 // }
+
+export class DbError
+{
+  constructor(public message: string, public fatal: boolean = false)
+  {
+    console.error(message);
+  }
+}
 
 export class Database
 {
@@ -97,7 +121,7 @@ export class Database
   }
 
   // returns added rows
-  public static async addEvents(dates_in: string[], trackNames_in: string[], states_in: string[]): Promise<DbRow[] | null>
+  public static async addEvents(dates_in: string[], trackNames_in: string[], states_in: string[]): Promise<DbRowResponse | null>
   {
     // TODO: verify date string format
     if (dates_in.length !== trackNames_in.length)
@@ -107,8 +131,7 @@ export class Database
 
     if (dates_in.length === 0)
     {
-      console.error("Nothing added - dates_in is empty.");
-      return null;
+      return DbRowResponse.withError("Nothing added - dates_in is empty.");
     }
 
     console.log(`dates_in to add to database: ${dates_in}`);
@@ -138,8 +161,7 @@ export class Database
 
     if (dates.length === 0)
     {
-      console.log("Nothing to add - everything exists already")
-      return null;
+      return DbRowResponse.withError("Nothing to add - everything exists already");
     }
 
     let valuesStr: string = "";
@@ -151,7 +173,7 @@ export class Database
     const insertQuery: string = `INSERT INTO dateandtrack (eventDate, trackName, state) VALUES
       ${valuesStr} RETURNING *;`;
     const result = await this.makeQuery(insertQuery);
-    return result.rows;
+    return DbRowResponse.withRows(result.rows);
   }
 
   public static async getEventsForDate(date: string): Promise<any>
