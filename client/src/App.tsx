@@ -410,8 +410,9 @@ class App extends React.Component<AppProps>
   render()
   {
     return <div className="App">
-      {this.renderTestDataSection()}
-      <hr/>
+      <br/>
+      {/* {this.renderTestDataSection()}
+      <hr/> */}
 
       {this.renderParseDocumentSection()}
       <hr/>
