@@ -319,11 +319,11 @@ class App extends React.Component<AppProps>
       }
 
       Get events for State:<br/>
-      <label htmlFor="getEventsForStateInput">Date: </label>
+      <label htmlFor="getEventsForStateInput">State: </label>
       <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/>
       <button onClick={() => this.submitGetEventsForState()}>Submit</button>
     </>
-  }
+  } //TODO: state isn't working yet
 
   private renderUniqueTracksSection(): JSX.Element
   {
