@@ -10,7 +10,7 @@ export class AppMachine
   @observable parseDocUrl: string | null = null;
   @observable parseDocTrackName: string | null = null;
   @observable eventDate: string = "";
-  @observable eventState: string | null = null;
+  @observable eventState: string = "";
   @observable returnedRowsFromParseDocument: DbRowResponse | null = null;
   @observable state: string = "MA";
 
@@ -53,11 +53,11 @@ export class AppMachine
       {date: date, trackname: trackname, state: state});
   }
 
-  public async getEventForDate(date: string, state: string | null): Promise<any>
+  public async getEventForDate(date: string, state: string): Promise<any>
   {
     const d = new Date(date); //formatted on server
 
-    if (state == null) //date only
+    if (state === "") //date only
     {
       return this.getRequest(`/api/events/${d}`);
     }
@@ -156,6 +156,8 @@ class App extends React.Component<AppProps>
     {
       rows = result.rows;
     }
+
+
     runInAction(() => this.machine.eventsForDate = rows);
   }
 
@@ -335,6 +337,19 @@ class App extends React.Component<AppProps>
 
   private renderGetEventsSection(): JSX.Element
   {
+    let titleString = "";
+    if (this.machine.eventDate)
+    {
+      if (this.machine.eventState)
+      {
+        titleString = `Date: ${this.machine.eventDate}, State: ${this.machine.eventState}`;
+      }
+      else
+      {
+        titleString = `Date: ${this.machine.eventDate}`;
+      }
+    }
+
     return <>
       Get events for:<br/>
       <label htmlFor="getEventsForDateInput">Date: </label>
@@ -357,15 +372,20 @@ class App extends React.Component<AppProps>
 
       <br/>
       {
-        this.machine.eventDate != null &&
+        titleString !== "" &&
           <>
-            Date:
-            {this.machine.eventDate}
+            {titleString}
+            <br/>
+            <br/>
           </>
       }
       {
         this.machine.eventsForDate != null &&
         this.renderTracksList(this.machine.eventsForDate)
+      }
+      {
+        this.machine.eventsForDate != null && this.machine.eventsForDate.length === 0 &&
+        <>No Races Found</>
       }
     </>
   } //TODO: state isn't working yet
