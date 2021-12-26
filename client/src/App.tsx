@@ -9,7 +9,7 @@ export class AppMachine
   @observable testData: any = null;
   @observable parseDocUrl: string | null = null;
   @observable parseDocTrackName: string | null = null;
-  @observable eventDate: string | null = null;
+  @observable eventDate: string = "";
   @observable eventState: string | null = null;
   @observable returnedRowsFromParseDocument: DbRowResponse | null = null;
   @observable state: string = "MA";
@@ -53,15 +53,18 @@ export class AppMachine
       {date: date, trackname: trackname, state: state});
   }
 
-  public async getEventForDate(date: string): Promise<any>
+  public async getEventForDate(date: string, state: string | null): Promise<any>
   {
-    const d = new Date(date);
-    return this.getRequest(`/api/events/${d}`)
-  }
+    const d = new Date(date); //formatted on server
 
-  public async getEventForState(state: string): Promise<any>
-  {
-    return this.getRequest(`/api/events/state/${state}`)
+    if (state == null) //date only
+    {
+      return this.getRequest(`/api/events/${d}`);
+    }
+    else
+    {
+      return this.getRequest(`/api/events/${d}/state/${state}`);
+    }
   }
 
   public async parseDocument(): Promise<DbRowResponse | null>
@@ -139,23 +142,11 @@ class App extends React.Component<AppProps>
 
   private async submitGetEventsForDate(): Promise<void>
   {
-    const result = await this.machine.getEventForDate(this.machine.eventDate!!);
-    let rows: any[];
-    if (result.rows.length === 0)
+    if (this.machine.eventDate === "")
     {
-      rows = [];
+      throw new Error("eventDate must be defined");
     }
-    else
-    {
-      rows = result.rows;
-    }
-    runInAction(() => this.machine.eventsForDate = rows);
-  }
-
-  //TODO: copied from above
-  private async submitGetEventsForState(): Promise<void>
-  {
-    const result = await this.machine.getEventForState(this.machine.eventState!!);
+    const result = await this.machine.getEventForDate(this.machine.eventDate, this.machine.eventState);
     let rows: any[];
     if (result.rows.length === 0)
     {
@@ -287,7 +278,7 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: any) => {
-          return <div>{row.trackname}</div>;
+          return <div key={row}>{row.trackname}</div>;
         })
       }
     </div>
@@ -345,16 +336,24 @@ class App extends React.Component<AppProps>
   private renderGetEventsSection(): JSX.Element
   {
     return <>
-      Get events for date:<br/>
+      Get events for:<br/>
       <label htmlFor="getEventsForDateInput">Date: </label>
-      <input type="text" name="getEventsForDateInput" onChange={this.onGetEventForDateDateChange}/>
-      <button onClick={() => this.submitGetEventsForDate()}>Submit</button>
+      <input type="text" 
+        name="getEventsForDateInput" 
+        value={this.machine.eventDate} 
+        onChange={this.onGetEventForDateDateChange}
+      />
+
       <br/>
-      Get events for State:<br/>
       <label htmlFor="getEventsForStateInput">State: </label>
       <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/>
-      <button onClick={() => this.submitGetEventsForState()}>Submit</button>
+      {/* <button onClick={() => this.submitGetEventsForState()}>Submit</button> */}
       <br/>
+      <button onClick={() => this.submitGetEventsForDate()}
+        disabled={this.machine.eventDate === ""}
+      >
+        Submit
+      </button>
 
       <br/>
       {

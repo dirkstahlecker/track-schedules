@@ -99,20 +99,35 @@ app.post("/api/events/add", async(req, res) => {
 app.get("/api/events/:date", async(req, res) => {
   console.log(`/api/events/${req.params.date}`);
 
-  const result = await Database.getEventsForDate(req.params.date);
+  const result = await Database.getEventsForDate(req.params.date, null);
 
   res.set('Content-Type', 'application/json');
 	res.json(result);
 });
 
-app.get("/api/events/state/:state", async(req, res) => {
-  console.log(`/api/events/state/${req.params.state}`);
+app.get("/api/events/:date/state/:state", async(req, res) => {
+  const state = req.params.state;
+  console.log(`/api/events/${req.params.date}/state/${state}`);
 
-  const result = await Database.getEventsForState(req.params.state);
+  if (state.length !== 2) // TODO: better error handling
+  {
+    throw new Error("Invalid state");
+  }
+
+  const result = await Database.getEventsForDate(req.params.date, state);
 
   res.set('Content-Type', 'application/json');
 	res.json(result);
 });
+
+// app.get("/api/events/state/:state", async(req, res) => {
+//   console.log(`/api/events/state/${req.params.state}`);
+
+//   const result = await Database.getEventsForState(req.params.state);
+
+//   res.set('Content-Type', 'application/json');
+// 	res.json(result);
+// });
 
 app.post("/api/events/parseDocument", async(req, res) => {
   console.log(`/api/events/parseDocument`);

@@ -176,20 +176,25 @@ export class Database
     return DbRowResponse.withRows(result.rows);
   }
 
-  public static async getEventsForDate(date: string): Promise<any>
+  public static async getEventsForDate(date: string, state: string | null): Promise<any>
   {
     // format the date
     const formattedDate: string = DateHelper.convertDateObjToDatabaseDateString(new Date(date));
 
-    const query: string = `SELECT * FROM dateandtrack WHERE eventdate='${formattedDate}';`;
+    let query: string = `SELECT * FROM dateandtrack WHERE eventdate='${formattedDate}'`;
+    if (state != null && state !== "" && state.length === 2)
+    {
+      query += ` AND state='${state}'`;
+    }
+    query += ";";
     return Database.makeQuery(query);
   }
 
-  public static async getEventsForState(state: string): Promise<any>
-  {
-    const query: string = `SELECT * FROM dateandtrack WHERE state='${state}';`;
-    return Database.makeQuery(query);
-  }
+  // public static async getEventsForState(state: string): Promise<any>
+  // {
+  //   const query: string = `SELECT * FROM dateandtrack WHERE state='${state}';`;
+  //   return Database.makeQuery(query);
+  // }
 
   public static async deleteEvent(date: string, trackname: string): Promise<void>
   {
