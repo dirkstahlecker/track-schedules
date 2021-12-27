@@ -351,7 +351,7 @@ class App extends React.Component<AppProps>
     }
 
     return <>
-      Get events for:<br/>
+      Get all events for:<br/>
       <label htmlFor="getEventsForDateInput">Date: </label>
       <input type="text" 
         name="getEventsForDateInput" 
@@ -421,7 +421,19 @@ class App extends React.Component<AppProps>
       <hr/>
 
       {this.renderUniqueTracksSection()}
+
+      <br/>
+      <br/>
+      {this.renderFooter()}
     </div>
+  }
+
+  private renderFooter(): JSX.Element
+  {
+    return <div className="footer">
+      Site designed by Dirk Stahlecker | Copyright {new Date().getFullYear()} | 
+      Contact: <a href="mailto:trackchaserDirk@gmail.com">trackchaserDirk@gmail.com</a>
+    </div>;
   }
 }
 
