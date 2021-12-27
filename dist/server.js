@@ -49,6 +49,9 @@ async function testing() {
     // doScraping();
 }
 // testing();
+function isValidState(state) {
+    return state.length === 2; // TODO: improve
+}
 app.post("/api/events/add", async (req, res) => {
     console.log(`/api/events/add`);
     const date = req.params.date;
@@ -78,7 +81,7 @@ app.get("/api/events/:date", async (req, res) => {
 app.get("/api/events/:date/state/:state", async (req, res) => {
     const state = req.params.state;
     console.log(`/api/events/${req.params.date}/state/${state}`);
-    if (state.length !== 2) // TODO: better error handling
+    if (!isValidState(state)) // TODO: better error handling
      {
         throw new Error("Invalid state");
     }
@@ -89,6 +92,17 @@ app.get("/api/events/:date/state/:state", async (req, res) => {
 app.get("/api/events/dateRange/:dateRange", async (req, res) => {
     console.log(`/api/events/dateRange/${req.params.dateRange}`);
     const result = await database_1.Database.getEventsForDateRange(req.params.dateRange, null);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
+});
+app.get("/api/events/dateRange/:dateRange/state/:state", async (req, res) => {
+    const state = req.params.state;
+    console.log(`/api/events/dateRange/${req.params.dateRange}/state/${state}`);
+    if (!isValidState(state)) // TODO: better error handling
+     {
+        throw new Error("Invalid state");
+    }
+    const result = await database_1.Database.getEventsForDateRange(req.params.dateRange, state);
     res.set('Content-Type', 'application/json');
     res.json(result);
 });

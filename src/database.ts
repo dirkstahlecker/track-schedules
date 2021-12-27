@@ -207,7 +207,12 @@ export class Database
     console.log(`${date1}`)
     console.log(`${date2}`)
 
-    const query: string = `SELECT * FROM dateandtrack WHERE eventdate>='${date1}' AND eventDate<='${date2}';`;
+    let query: string = `SELECT * FROM dateandtrack WHERE eventdate>='${date1}' AND eventDate<='${date2}'`;
+    if (state != null && state !== "" && state.length === 2)
+    {
+      query += ` AND state='${state}'`;
+    }
+    query += ";";
     return Database.makeQuery(query);
   }
 

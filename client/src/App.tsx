@@ -57,7 +57,14 @@ export class AppMachine
   {
     if (date.indexOf("|") > 0) //TODO: more specific validation
     {
-      return this.getRequest(`/api/events/dateRange/${date}`); //TODO: state
+      if (state === "") //date only
+      {
+        return this.getRequest(`/api/events/dateRange/${date}`);
+      }
+      else
+      {
+        return this.getRequest(`/api/events/dateRange/${date}/state/${state}`);
+      }
     }
 
     const d = new Date(date); //formatted on server
