@@ -86,6 +86,12 @@ app.get("/api/events/:date/state/:state", async (req, res) => {
     res.set('Content-Type', 'application/json');
     res.json(result);
 });
+app.get("/api/events/dateRange/:dateRange", async (req, res) => {
+    console.log(`/api/events/dateRange/${req.params.dateRange}`);
+    const result = await database_1.Database.getEventsForDateRange(req.params.dateRange, null);
+    res.set('Content-Type', 'application/json');
+    res.json(result);
+});
 // app.get("/api/events/state/:state", async(req, res) => {
 //   console.log(`/api/events/state/${req.params.state}`);
 //   const result = await Database.getEventsForState(req.params.state);

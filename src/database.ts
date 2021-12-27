@@ -190,11 +190,26 @@ export class Database
     return Database.makeQuery(query);
   }
 
-  // public static async getEventsForState(state: string): Promise<any>
-  // {
-  //   const query: string = `SELECT * FROM dateandtrack WHERE state='${state}';`;
-  //   return Database.makeQuery(query);
-  // }
+  // separated by |
+  public static async getEventsForDateRange(dateRange: string, state: string | null): Promise<any>
+  {
+    console.log("DATE RANGE")
+    const dates: string[] = dateRange.split("|");
+    if (dates.length !== 2)
+    {
+      throw new Error(`Invalid dateRange ${dateRange}`);
+    }
+
+    // format the date
+    const date1: string = DateHelper.convertDateObjToDatabaseDateString(new Date(dates[0]));
+    const date2: string = DateHelper.convertDateObjToDatabaseDateString(new Date(dates[1]));
+
+    console.log(`${date1}`)
+    console.log(`${date2}`)
+
+    const query: string = `SELECT * FROM dateandtrack WHERE eventdate>='${date1}' AND eventDate<='${date2}';`;
+    return Database.makeQuery(query);
+  }
 
   public static async deleteEvent(date: string, trackname: string): Promise<void>
   {
