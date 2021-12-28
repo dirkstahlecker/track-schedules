@@ -12,9 +12,9 @@ export class AppMachine
   @observable eventDate: string = "";
   @observable eventDateRangeFrom: string = "";
   @observable eventDateRangeTo: string = "";
-  @observable eventState: string = "";
+  @observable eventState: string = "NULL";
   @observable returnedRowsFromParseDocument: DbRowResponse | null = null;
-  @observable state: string = "MA";
+  @observable state: string = "NULL";
 
   //used for toggling between date and date range
   @observable getForDateRadio: boolean = true; 
@@ -237,9 +237,15 @@ class App extends React.Component<AppProps>
     // this.addEvent();
   }
 
-  private renderStateSelect(value: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void): JSX.Element
+  private renderStateSelect(value: string, 
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, 
+    allowUndefined: boolean): JSX.Element
   {
     return <select value={value} onChange={onChange}>
+      {
+        allowUndefined &&
+        <option value="NULL">Select...</option>
+      }
       <option value="AL">Alabama</option>
       <option value="AK">Alaska</option>
       <option value="AZ">Arizona</option>
@@ -356,7 +362,8 @@ class App extends React.Component<AppProps>
       />
       &nbsp;State: {this.renderStateSelect(
         this.machine.state, 
-        (e) => runInAction(() => this.machine.state = e.target.value)
+        (e) => runInAction(() => this.machine.state = e.target.value),
+        false
       )}
 
       <br/>
@@ -392,7 +399,7 @@ class App extends React.Component<AppProps>
     let titleString = "";
     if (this.machine.getForDateRadio && this.machine.eventDate)
     {
-      if (this.machine.eventState)
+      if (this.machine.eventState !== "NULL")
       {
         titleString = `Date: ${this.machine.eventDate}, State: ${this.machine.eventState}`;
       }
@@ -404,7 +411,7 @@ class App extends React.Component<AppProps>
     else if (!this.machine.getForDateRadio && this.machine.eventDateRangeFrom && this.machine.eventDateRangeTo)
     {
       titleString = `Date: ${this.machine.eventDateRangeFrom} to ${this.machine.eventDateRangeTo}`;
-      if (this.machine.eventState)
+      if (this.machine.eventState !== "NULL")
       {
         titleString += `, ${this.machine.eventState}`;
       }
@@ -469,7 +476,8 @@ class App extends React.Component<AppProps>
       {/* <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/> */}
       {this.renderStateSelect(
         this.machine.eventState, 
-        (e) => runInAction(() => this.machine.eventState = e.currentTarget.value)
+        (e) => runInAction(() => this.machine.eventState = e.currentTarget.value),
+        true
       )}
       <br/>
       <button onClick={() => this.submitGetEventsForDate()}
@@ -551,5 +559,7 @@ class App extends React.Component<AppProps>
 }
 
 export default App;
+
+//TODO: VERIFY INPUT DATES ARE ACCURATE AND NOT AFFECTED BY WEIRD OFF BY ONE ERRORS
 
 //TODO: indicate in UI when no dates were added because they already exist
