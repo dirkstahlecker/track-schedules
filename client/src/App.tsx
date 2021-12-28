@@ -238,14 +238,10 @@ class App extends React.Component<AppProps>
   }
 
   private renderStateSelect(value: string, 
-    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, 
-    allowUndefined: boolean): JSX.Element
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void): JSX.Element
   {
     return <select value={value} onChange={onChange}>
-      {
-        allowUndefined &&
-        <option value="NULL">Select...</option>
-      }
+      <option value="NULL">Select...</option>
       <option value="AL">Alabama</option>
       <option value="AK">Alaska</option>
       <option value="AZ">Arizona</option>
@@ -362,12 +358,17 @@ class App extends React.Component<AppProps>
       />
       &nbsp;State: {this.renderStateSelect(
         this.machine.state, 
-        (e) => runInAction(() => this.machine.state = e.target.value),
-        false
+        (e) => runInAction(() => this.machine.state = e.target.value)
       )}
 
       <br/>
-      <button onClick={() => this.submitUrl()}>Submit</button>
+      <button disabled={this.machine.state === "NULL" || 
+                        this.machine.parseDocUrl === "" || 
+                        this.machine.parseDocTrackName === ""} 
+        onClick={() => this.submitUrl()}
+      >
+        Submit
+      </button>
       <button onClick={() => {
         (document.getElementById("parseDocumentTrackName") as HTMLInputElement).value = "";
         (document.getElementById("parseDocumentInput") as HTMLInputElement).value = "";
@@ -476,8 +477,7 @@ class App extends React.Component<AppProps>
       {/* <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/> */}
       {this.renderStateSelect(
         this.machine.eventState, 
-        (e) => runInAction(() => this.machine.eventState = e.currentTarget.value),
-        true
+        (e) => runInAction(() => this.machine.eventState = e.currentTarget.value)
       )}
       <br/>
       <button onClick={() => this.submitGetEventsForDate()}
