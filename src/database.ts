@@ -176,12 +176,14 @@ export class Database
     return DbRowResponse.withRows(result.rows);
   }
 
+  // DATE MUST BE FORMATTED yyy-mm-dd
   public static async getEventsForDate(date: string, state: string | null): Promise<any>
   {
     // format the date
-    const formattedDate: string = DateHelper.convertDateObjToDatabaseDateString(new Date(date));
+    console.log(`before formatting: ${date}`)
+    // const formattedDate: string = DateHelper.convertDateObjToDatabaseDateString(new Date(date));
 
-    let query: string = `SELECT * FROM dateandtrack WHERE eventdate='${formattedDate}'`;
+    let query: string = `SELECT * FROM dateandtrack WHERE eventdate='${date}'`;
     if (state != null && state !== "" && state.length === 2)
     {
       query += ` AND state='${state}'`;
