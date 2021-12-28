@@ -60,27 +60,37 @@ export class AppMachine
 
   public async getEventForDate(date: string, state: string): Promise<any>
   {
+    //For some reason, "2022-08-20" is a day behind, but "08-20-2022" is correct. I have no idea why
+    //The date picker gives the former, so we need to convert it
+
     if (date.indexOf("|") > 0) //TODO: more specific validation
     {
+      const ds: string[] = date.split("|");
+      const d1 = ds[0].split("-");
+      const d2 = ds[1].split("-");
+      const fixedDate = `${d1[1]}-${d1[2]}-${d1[0]}|${d2[1]}-${d2[2]}-${d2[0]}`;
+
       if (state === "") //date only
       {
-        return this.getRequest(`/api/events/dateRange/${date}`);
+        return this.getRequest(`/api/events/dateRange/${fixedDate}`);
       }
       else
       {
-        return this.getRequest(`/api/events/dateRange/${date}/state/${state}`);
+        return this.getRequest(`/api/events/dateRange/${fixedDate}/state/${state}`);
       }
     }
 
-    const d = new Date(date); //formatted on server
+    // const d = new Date(date); //formatted on server
 
+    const pieces: string[] = date.split("-");
+    const fixedDate = `${pieces[1]}-${pieces[2]}-${pieces[0]}`;
     if (state === "") //date only
     {
-      return this.getRequest(`/api/events/${d}`);
+      return this.getRequest(`/api/events/${fixedDate}`);
     }
     else
     {
-      return this.getRequest(`/api/events/${d}/state/${state}`);
+      return this.getRequest(`/api/events/${date}/state/${state}`);
     }
   }
 
@@ -374,10 +384,11 @@ class App extends React.Component<AppProps>
     </>
   }
 
+  //TODO: clear results when radio buttons are changed
   private renderGetEventsSection(): JSX.Element
   {
     let titleString = "";
-    if (this.machine.eventDate)
+    if (this.machine.getForDateRadio && this.machine.eventDate)
     {
       if (this.machine.eventState)
       {
@@ -388,10 +399,18 @@ class App extends React.Component<AppProps>
         titleString = `Date: ${this.machine.eventDate}`;
       }
     }
+    else if (!this.machine.getForDateRadio && this.machine.eventDateRangeFrom && this.machine.eventDateRangeTo)
+    {
+      titleString = `Date: ${this.machine.eventDateRangeFrom} to ${this.machine.eventDateRangeTo}`;
+      if (this.machine.eventState)
+      {
+        titleString += `, ${this.machine.eventState}`;
+      }
+    }
 
     const singleDate: JSX.Element = <>
       <label htmlFor="getEventsForDateInput">Single Date: </label>
-      <input type="text" 
+      <input type="date" 
         name="getEventsForDateInput" 
         value={this.machine.eventDate} 
         onChange={this.onGetEventForDateDateChange}
@@ -401,11 +420,11 @@ class App extends React.Component<AppProps>
     
     const dateRange: JSX.Element = <>
       <label htmlFor="getEventsForDateRangeFromInput">Date Range: </label>
-      <input type="text" 
+      <input type="date" 
         name="getEventsForDateRangeFromInput" 
         value={this.machine.eventDateRangeFrom} 
         onChange={this.onGetEventForDateRangeFromChange}
-      /> to <input type="text" 
+      /> to <input type="date" 
         name="getEventsForDateRangeToInput" 
         value={this.machine.eventDateRangeTo} 
         onChange={this.onGetEventForDateRangeToChange}
@@ -474,7 +493,7 @@ class App extends React.Component<AppProps>
         <>No Races Found</>
       }
     </>
-  } //TODO: state isn't working yet
+  }
 
   private renderUniqueTracksSection(): JSX.Element
   {
@@ -509,17 +528,19 @@ class App extends React.Component<AppProps>
       {this.renderUniqueTracksSection()}
 
       <br/>
-      <br/>
       {this.renderFooter()}
     </div>
   }
 
   private renderFooter(): JSX.Element
   {
-    return <div className="footer">
+    return <>
+      <br/>
+      <div className="footer">
       Site designed by Dirk Stahlecker | Copyright {new Date().getFullYear()} | 
       Contact: <a href="mailto:trackchaserDirk@gmail.com">trackchaserDirk@gmail.com</a>
-    </div>;
+    </div>
+  </>;
   }
 }
 
