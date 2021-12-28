@@ -10,9 +10,14 @@ export class AppMachine
   @observable parseDocUrl: string | null = null;
   @observable parseDocTrackName: string | null = null;
   @observable eventDate: string = "";
+  @observable eventDateRangeFrom: string = "";
+  @observable eventDateRangeTo: string = "";
   @observable eventState: string = "";
   @observable returnedRowsFromParseDocument: DbRowResponse | null = null;
   @observable state: string = "MA";
+
+  //used for toggling between date and date range
+  @observable getForDateRadio: boolean = true; 
 
   @observable eventsForDate: any = null;
   @observable uniqueTracks: {trackname: string, state: string}[] | null = null;
@@ -154,11 +159,26 @@ class App extends React.Component<AppProps>
 
   private async submitGetEventsForDate(): Promise<void>
   {
-    if (this.machine.eventDate === "")
+    let dateString = "";
+    if (this.machine.getForDateRadio) //single date
     {
-      throw new Error("eventDate must be defined");
+      if (this.machine.eventDate === "")
+      {
+        throw new Error("eventDate must be defined");
+      }
+      dateString = this.machine.eventDate;
     }
-    const result = await this.machine.getEventForDate(this.machine.eventDate, this.machine.eventState);
+    else //date range
+    {
+      if (this.machine.eventDateRangeFrom === "" || this.machine.eventDateRangeTo === "")
+      {
+        throw new Error("eventDate must be defined");
+      }
+      dateString = this.machine.eventDateRangeFrom + "|" + this.machine.eventDateRangeTo;
+    }
+
+    const result = await this.machine.getEventForDate(dateString, this.machine.eventState);
+
     let rows: any[];
     if (result.rows.length === 0)
     {
@@ -190,6 +210,13 @@ class App extends React.Component<AppProps>
     runInAction(() => this.machine.eventDate = event.currentTarget.value);
   }
 
+  private onGetEventForDateRangeFromChange = (event: React.FormEvent<HTMLInputElement>): void => {
+    runInAction(() => this.machine.eventDateRangeFrom = event.currentTarget.value);
+  }
+
+  private onGetEventForDateRangeToChange = (event: React.FormEvent<HTMLInputElement>): void => {
+    runInAction(() => this.machine.eventDateRangeTo = event.currentTarget.value);
+  }
 
   private onGetEventForStateStateChange = (event: React.FormEvent<HTMLInputElement>): void => {
     runInAction(() => this.machine.eventState = event.currentTarget.value);
@@ -267,7 +294,7 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: DbRow) => {
-          return <React.Fragment key="row">
+          return <React.Fragment key={row.id}>
             <div>
               {row.trackname}:&nbsp;
               {row.eventdate}
@@ -292,7 +319,7 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: any) => {
-          return <div key={row}>{row.trackname}</div>;
+          return <div key={row.id ?? row}>{row.trackname}</div>;
         })
       }
     </div>
@@ -362,22 +389,69 @@ class App extends React.Component<AppProps>
       }
     }
 
-    return <>
-      Get all events for:<br/>
-      <label htmlFor="getEventsForDateInput">Date: </label>
+    const singleDate: JSX.Element = <>
+      <label htmlFor="getEventsForDateInput">Single Date: </label>
       <input type="text" 
         name="getEventsForDateInput" 
         value={this.machine.eventDate} 
         onChange={this.onGetEventForDateDateChange}
       />
+      <br/>
+    </>;
+    
+    const dateRange: JSX.Element = <>
+      <label htmlFor="getEventsForDateRangeFromInput">Date Range: </label>
+      <input type="text" 
+        name="getEventsForDateRangeFromInput" 
+        value={this.machine.eventDateRangeFrom} 
+        onChange={this.onGetEventForDateRangeFromChange}
+      /> to <input type="text" 
+        name="getEventsForDateRangeToInput" 
+        value={this.machine.eventDateRangeTo} 
+        onChange={this.onGetEventForDateRangeToChange}
+      />
+      <br/>
+    </>;
+
+    return <>
+      Get all events for:<br/>
+
+      <input type="radio" 
+        name="singleDateRadio" 
+        checked={this.machine.getForDateRadio}
+        onChange={(e) => {
+          runInAction(() => this.machine.getForDateRadio = e.currentTarget.checked);
+        }}
+      />
+      <label htmlFor="singleDateRadio">Single Date</label>
+      <input type="radio" 
+        name="dateRangeRadio" 
+        checked={!this.machine.getForDateRadio}
+        onChange={(e) => {
+          runInAction(() => this.machine.getForDateRadio = !e.currentTarget.checked);
+        }}
+      />
+      <label htmlFor="dateRangeRadio">Date Range</label>
+      <br/>
+
+      {
+        this.machine.getForDateRadio &&
+        singleDate
+      }
+      {
+        !this.machine.getForDateRadio &&
+        dateRange
+      }
 
       <br/>
       <label htmlFor="getEventsForStateInput">State: </label>
       <input type="text" name="getEventsForStateInput" onChange={this.onGetEventForStateStateChange}/>
-      {/* <button onClick={() => this.submitGetEventsForState()}>Submit</button> */}
       <br/>
       <button onClick={() => this.submitGetEventsForDate()}
-        disabled={this.machine.eventDate === ""}
+        disabled={this.machine.getForDateRadio 
+          ? this.machine.eventDate === "" 
+          : this.machine.eventDateRangeFrom === "" || this.machine.eventDateRangeTo === ""
+        }
       >
         Submit
       </button>

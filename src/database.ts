@@ -193,7 +193,6 @@ export class Database
   // separated by |
   public static async getEventsForDateRange(dateRange: string, state: string | null): Promise<any>
   {
-    console.log("DATE RANGE")
     const dates: string[] = dateRange.split("|");
     if (dates.length !== 2)
     {
@@ -203,9 +202,6 @@ export class Database
     // format the date
     const date1: string = DateHelper.convertDateObjToDatabaseDateString(new Date(dates[0]));
     const date2: string = DateHelper.convertDateObjToDatabaseDateString(new Date(dates[1]));
-
-    console.log(`${date1}`)
-    console.log(`${date2}`)
 
     let query: string = `SELECT * FROM dateandtrack WHERE eventdate>='${date1}' AND eventDate<='${date2}'`;
     if (state != null && state !== "" && state.length === 2)
