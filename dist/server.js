@@ -70,8 +70,7 @@ app.post("/api/events/add", async (req, res) => {
     res.set('Content-Type', 'application/json');
     res.json(result);
 });
-// send in a string that can be converted to a date here
-// then the server will put it in the right format
+// DATE MUST BE FORMATTED yyy-mm-dd
 app.get("/api/events/:date", async (req, res) => {
     console.log(`/api/events/${req.params.date}`);
     const result = await database_1.Database.getEventsForDate(req.params.date, null);

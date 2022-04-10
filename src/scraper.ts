@@ -244,6 +244,7 @@ export abstract class DateHelper
       day = `0${day_in}`;
     }
 
+    console.log(`year_in: ${year_in}, month: ${month}, day: ${day}`)
     const ret = `${year_in}-${month}-${day}`;
 
     return ret;
@@ -254,6 +255,7 @@ export abstract class DateHelper
     const year: number = date.getFullYear();
     const monthIndex: number | string = date.getMonth();
     const day: number | string = date.getDate();
+    console.log(`year: ${year}, monthIndex: ${monthIndex}, day: ${day}`)
     return this.convertNumbersToDatabaseDateString(monthIndex, day, year);
   }
 }

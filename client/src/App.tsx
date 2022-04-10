@@ -70,7 +70,7 @@ export class AppMachine
       const d2 = ds[1].split("-");
       const fixedDate = `${d1[1]}-${d1[2]}-${d1[0]}|${d2[1]}-${d2[2]}-${d2[0]}`;
 
-      if (state === "") //date only
+      if (state === "" || state === "NULL") //date only
       {
         return this.getRequest(`/api/events/dateRange/${fixedDate}`);
       }
@@ -316,6 +316,12 @@ class App extends React.Component<AppProps>
     </div>
   }
 
+  private renderDate(dateStr: string): string
+  {
+    const d = new Date(dateStr);
+    return `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}`;
+  }
+
   private renderTracksList(rows: DbRow[] | null): JSX.Element
   {
     if (rows == null)
@@ -329,7 +335,7 @@ class App extends React.Component<AppProps>
     return <div>
       {
         rows.map((row: any) => {
-          return <div key={row.id ?? row}>{row.trackname}</div>;
+          return <div key={row.id ?? row}>{this.renderDate(row.eventdate)}: {row.trackname}, {row.state}</div>;
         })
       }
     </div>
@@ -490,14 +496,14 @@ class App extends React.Component<AppProps>
       </button>
 
       <br/>
-      {
+      {/* {
         titleString !== "" &&
           <>
             {titleString}
             <br/>
             <br/>
           </>
-      }
+      } */}
       {
         this.machine.eventsForDate != null &&
         this.renderTracksList(this.machine.eventsForDate)

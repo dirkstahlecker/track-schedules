@@ -97,7 +97,7 @@ app.post("/api/events/add", async(req, res) => {
 	res.json(result);
 });
 
-//DATE MUST BE FORMATTED yyy-mm-dd
+// DATE MUST BE FORMATTED yyy-mm-dd
 app.get("/api/events/:date", async(req, res) => {
   console.log(`/api/events/${req.params.date}`);
 
